@@ -1,0 +1,4 @@
+name: RPGambling
+version: '${version}'
+main: me.wega.rpgambling.RPGambling
+api-version: '1.19'
