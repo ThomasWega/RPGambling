@@ -2,3 +2,6 @@ name: RPGambling
 version: '${version}'
 main: me.wega.rpgambling.RPGambling
 api-version: '1.19'
+commands:
+  gambling:
+    description: Main command for Gambling
