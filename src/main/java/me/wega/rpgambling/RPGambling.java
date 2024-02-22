@@ -1,6 +1,5 @@
 package me.wega.rpgambling;
 
-import dev.jorel.commandapi.CommandAPICommand;
 import lombok.Getter;
 import me.wega.rpgambling.commands.GamblingCommand;
 import me.wega.rpgambling.config.ConfigManager;
