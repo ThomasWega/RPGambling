@@ -8,14 +8,14 @@ public class GamblingCommand {
     }
 
     private void register() {
-        new CommandAPICommand("admingambling").withAliases("")
+        new CommandAPICommand("admingambling").withAliases("");
         new CommandAPICommand("gambling")
             .withPermission("gambling.user")
             .withSubcommand(new CommandAPICommand("admin")
                 .withPermission("gambling.admin")
-                .withSubcommand(new CommandAPICommand(("chips")))
-                .withSubcommand()
-                .withSubcommand()
+                .withSubcommand(new CommandAPICommand("chips"))
+                .withSubcommand(new CommandAPICommand("owner"))
+                .withSubcommand(new CommandAPICommand("rig"))
             )
             .withSubcommand(new CommandAPICommand("chips"))
             .withSubcommand(new CommandAPICommand("time"))
