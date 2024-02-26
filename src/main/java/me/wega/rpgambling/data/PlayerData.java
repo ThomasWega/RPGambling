@@ -1,6 +1,7 @@
 package me.wega.rpgambling.data;
 
 import me.wega.rpgambling.RPGambling;
+import org.apache.commons.lang.time.DurationFormatUtils;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -37,6 +38,9 @@ public class PlayerData {
         container.set(chipsKey, PersistentDataType.INTEGER, chips);
     }
 
+    /**
+     * @return {@code true} if the player has enough chips to withdraw the amount, {@code false} otherwise
+     */
     public boolean withdrawChips(int amount) {
         int chips = getChips();
         if (chips < amount) {
@@ -50,12 +54,16 @@ public class PlayerData {
         setChips(getChips() + amount);
     }
 
-    public int getTimeSpentInCasino() {
-        return container.getOrDefault(casinoTimeKey, PersistentDataType.INTEGER, 0);
+    public long getTimeSpentInCasino() {
+        return container.getOrDefault(casinoTimeKey, PersistentDataType.LONG, 0L);
     }
 
-    public void setTimeSpentInCasino(int timeSpentInCasino) {
-        container.set(casinoTimeKey, PersistentDataType.INTEGER, timeSpentInCasino);
+    public String getPrettyTimeSpentInCasino() {
+        return DurationFormatUtils.formatDuration(getTimeSpentInCasino(), "HH'h' mm'm and' ss's", false);
+    }
+
+    public void setTimeSpentInCasino(long timeSpentInCasino) {
+        container.set(casinoTimeKey, PersistentDataType.LONG, timeSpentInCasino);
     }
 
     public void addTimeSpentInCasino(int timeSpentInCasino) {
