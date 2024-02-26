@@ -20,10 +20,14 @@ public final class RPGambling extends JavaPlugin {
     private static RPGambling instance;
 
     @Override
-    public void onEnable() {
+    public void onLoad() {
         instance = this;
-        vault = Objects.requireNonNull(getServer().getServicesManager().getRegistration(Economy.class)).getProvider();
         worldGuard = new WorldGuardHandler();
+    }
+
+    @Override
+    public void onEnable() {
+        vault = Objects.requireNonNull(getServer().getServicesManager().getRegistration(Economy.class)).getProvider();
         configManager = new ConfigManager();
         configManager.load();
         registerCommands();
