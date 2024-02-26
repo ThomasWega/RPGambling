@@ -1,28 +1,64 @@
 package me.wega.rpgambling.data;
 
-import lombok.Getter;
-import org.bukkit.OfflinePlayer;
+import me.wega.rpgambling.RPGambling;
+import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Player;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class PlayerData {
-    private static final Map<OfflinePlayer, PlayerData> data = new HashMap<>();
+    private static final Map<Player, PlayerData> data = new HashMap<>();
+    private static final NamespacedKey chipsKey = new NamespacedKey(RPGambling.getInstance(), "chips");
+    private static final NamespacedKey casinoTimeKey = new NamespacedKey(RPGambling.getInstance(), "time_spent_in_casino");
 
-    private OfflinePlayer player;
-    @Getter
-    private int chips;
-    @Getter
-    private long timeSpentInCasino;
+    private final PersistentDataContainer container;
 
-    public static PlayerData get(OfflinePlayer player) {
+    public static PlayerData get(Player player) {
         PlayerData playerData = data.get(player);
-        return playerData != null ? playerData : new PlayerData(player);
+        if (playerData == null) {
+            playerData = new PlayerData(player);
+            data.put(player, playerData);
+        }
+        return playerData;
     }
 
-    private PlayerData(OfflinePlayer player) {
-        this.player = player;
-        timeSpentInCasino = 0;
-        chips = 0;
+    private PlayerData(Player player) {
+        container = player.getPersistentDataContainer();
+    }
+
+    public int getChips() {
+        return container.getOrDefault(chipsKey, PersistentDataType.INTEGER, 0);
+    }
+
+    public void setChips(int chips) {
+        container.set(chipsKey, PersistentDataType.INTEGER, chips);
+    }
+
+    public boolean withdrawChips(int amount) {
+        int chips = getChips();
+        if (chips < amount) {
+            return false;
+        }
+        setChips(chips - amount);
+        return true;
+    }
+
+    public void depositChips(int amount) {
+        setChips(getChips() + amount);
+    }
+
+    public int getTimeSpentInCasino() {
+        return container.getOrDefault(casinoTimeKey, PersistentDataType.INTEGER, 0);
+    }
+
+    public void setTimeSpentInCasino(int timeSpentInCasino) {
+        container.set(casinoTimeKey, PersistentDataType.INTEGER, timeSpentInCasino);
+    }
+
+    public void addTimeSpentInCasino(int timeSpentInCasino) {
+        setTimeSpentInCasino(getTimeSpentInCasino() + timeSpentInCasino);
     }
 }
