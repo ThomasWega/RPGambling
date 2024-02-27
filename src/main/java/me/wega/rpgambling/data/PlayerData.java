@@ -66,7 +66,7 @@ public class PlayerData {
         container.set(casinoTimeKey, PersistentDataType.LONG, timeSpentInCasino);
     }
 
-    public void addTimeSpentInCasino(int timeSpentInCasino) {
+    public void addTimeSpentInCasino(long timeSpentInCasino) {
         setTimeSpentInCasino(getTimeSpentInCasino() + timeSpentInCasino);
     }
 }
