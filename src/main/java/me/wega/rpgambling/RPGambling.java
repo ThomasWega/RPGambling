@@ -3,6 +3,7 @@ package me.wega.rpgambling;
 import lombok.Getter;
 import me.wega.rpgambling.commands.GamblingCommand;
 import me.wega.rpgambling.config.ConfigManager;
+import me.wega.rpgambling.handlers.PlaceholderHandler;
 import me.wega.rpgambling.handlers.WorldGuardHandler;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -28,6 +29,7 @@ public final class RPGambling extends JavaPlugin {
     @Override
     public void onEnable() {
         vault = Objects.requireNonNull(getServer().getServicesManager().getRegistration(Economy.class)).getProvider();
+        new PlaceholderHandler().register();
         configManager = new ConfigManager();
         configManager.load();
         registerCommands();
