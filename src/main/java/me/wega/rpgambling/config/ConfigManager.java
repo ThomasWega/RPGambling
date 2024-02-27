@@ -11,6 +11,7 @@ public class ConfigManager {
 
     public void load() {
         RPGambling plugin = RPGambling.getInstance();
+        plugin.saveDefaultConfig();
         FileConfiguration config = plugin.getConfig();
         ConfigurationSection messagesSection = Objects.requireNonNull(config.getConfigurationSection("Messages"));
         messagesSection.getValues(false).forEach((key, value) -> {
