@@ -1,10 +1,10 @@
 package me.wega.rpgambling;
 
+import com.sk89q.worldguard.WorldGuard;
 import lombok.Getter;
 import me.wega.rpgambling.commands.GamblingCommand;
 import me.wega.rpgambling.config.ConfigManager;
-import me.wega.rpgambling.handlers.PlaceholderHandler;
-import me.wega.rpgambling.handlers.WorldGuardHandler;
+import me.wega.rpgambling.handlers.*;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -28,6 +28,7 @@ public final class RPGambling extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        WorldGuard.getInstance().getPlatform().getSessionManager().registerHandler(CasinoTimeHandler.FACTORY, null);
         vault = Objects.requireNonNull(getServer().getServicesManager().getRegistration(Economy.class)).getProvider();
         new PlaceholderHandler().register();
         configManager = new ConfigManager();
