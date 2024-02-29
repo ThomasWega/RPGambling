@@ -9,7 +9,7 @@ public class GamblingCommand {
     }
 
     private void register() {
-        new CommandAPICommand("admingambling").withAliases("");
+        new CommandAPICommand("admingambling").withAliases("gambling admin");
         new CommandAPICommand("gambling")
             .withPermission("gambling.user")
             .withSubcommand(new CommandAPICommand("admin")
@@ -22,7 +22,7 @@ public class GamblingCommand {
                 player.sendMessage("You have total of " + PlayerData.get(player).getChips() + " chips.");
             }))
             .withSubcommand(new CommandAPICommand("time").executesPlayer((player, args) -> {
-                player.sendMessage("You have spent " + PlayerData.get(player).getTimeSpentInCasino() + " in the casino.");
+                player.sendMessage("You have spent " + PlayerData.get(player).getPrettyTimeSpentInCasino() + " in the casino.");
             }))
             .register();
     }
