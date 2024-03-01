@@ -7,7 +7,7 @@ public class PlaceholderHandler extends PlaceholderExpansion {
 
     @Override
     public @NotNull String getIdentifier() {
-        return "gb"; // TODO Dej si sem co chces
+        return "RPGambling";
     }
 
     @Override
