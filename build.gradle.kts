@@ -4,6 +4,7 @@ plugins {
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("io.papermc.paperweight.userdev") version "1.5.5"
     id("maven-publish")
+    idea
 }
 
 group = "me.wega"
@@ -73,5 +74,11 @@ publishing {
         create<MavenPublication>("RPGambling") {
             from(components["java"])
         }
+    }
+}
+
+idea {
+    module {
+        isDownloadJavadoc = true
     }
 }
