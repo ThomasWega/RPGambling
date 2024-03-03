@@ -5,7 +5,9 @@ import lombok.Getter;
 import me.wega.rpgambling.command.GamblingCommand;
 import me.wega.rpgambling.config.ConfigManager;
 import me.wega.rpgambling.handler.*;
+import me.wega.rpgambling.listener.InventoryListener;
 import net.milkbowl.vault.economy.Economy;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Objects;
@@ -34,9 +36,15 @@ public final class RPGambling extends JavaPlugin {
         configManager = new ConfigManager();
         configManager.load();
         registerCommands();
+        registerListeners();
     }
 
     private void registerCommands() {
         new GamblingCommand();
+    }
+
+    private void registerListeners() {
+        PluginManager manager = getServer().getPluginManager();
+        manager.registerEvents(new InventoryListener(), this);
     }
 }
