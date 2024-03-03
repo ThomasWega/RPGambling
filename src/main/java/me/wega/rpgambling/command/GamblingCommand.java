@@ -1,4 +1,4 @@
-package me.wega.rpgambling.commands;
+package me.wega.rpgambling.command;
 
 import dev.jorel.commandapi.CommandAPICommand;
 import me.wega.rpgambling.data.PlayerData;

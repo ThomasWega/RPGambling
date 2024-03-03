@@ -1,4 +1,4 @@
-package me.wega.rpgambling.handlers;
+package me.wega.rpgambling.handler;
 
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.jetbrains.annotations.NotNull;

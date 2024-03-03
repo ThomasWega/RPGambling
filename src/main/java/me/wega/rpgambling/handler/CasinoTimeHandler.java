@@ -1,4 +1,4 @@
-package me.wega.rpgambling.handlers;
+package me.wega.rpgambling.handler;
 
 import com.sk89q.worldedit.util.Location;
 import com.sk89q.worldguard.LocalPlayer;

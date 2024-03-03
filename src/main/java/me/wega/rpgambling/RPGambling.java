@@ -2,9 +2,9 @@ package me.wega.rpgambling;
 
 import com.sk89q.worldguard.WorldGuard;
 import lombok.Getter;
-import me.wega.rpgambling.commands.GamblingCommand;
+import me.wega.rpgambling.command.GamblingCommand;
 import me.wega.rpgambling.config.ConfigManager;
-import me.wega.rpgambling.handlers.*;
+import me.wega.rpgambling.handler.*;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.plugin.java.JavaPlugin;
 
