@@ -8,5 +8,7 @@ public interface InventoryData extends InventoryHolder {
      */
     boolean onClose();
 
+    void onDisconnect();
+
     void onClick(int slot);
 }

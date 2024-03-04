@@ -5,6 +5,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent.Reason;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 
@@ -15,8 +16,11 @@ public class InventoryListener implements Listener {
         InventoryHolder holder = event.getInventory().getHolder();
         if (!(holder instanceof InventoryData)) return;
         boolean close = ((InventoryData) holder).onClose();
-        if (event.getReason() != InventoryCloseEvent.Reason.PLAYER || !close) return;
-        event.getPlayer().openInventory(inventory);
+        if (event.getReason() == Reason.DISCONNECT) {
+            ((InventoryData) holder).onDisconnect();
+        } else if (!close) {
+            event.getPlayer().openInventory(inventory);
+        }
     }
 
     @EventHandler
