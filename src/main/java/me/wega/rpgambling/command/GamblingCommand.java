@@ -9,7 +9,8 @@ public class GamblingCommand {
     }
 
     private void register() {
-        new CommandAPICommand("admingambling").withAliases("gambling admin");
+        new CommandAPICommand("admingambling")
+                .withAliases("gambling admin");
         new CommandAPICommand("gambling")
             .withPermission("gambling.user")
             .withSubcommand(new CommandAPICommand("admin")

@@ -3,9 +3,7 @@ package me.wega.rpgambling;
 import com.sk89q.worldguard.WorldGuard;
 import lombok.Getter;
 import me.wega.rpgambling.command.GamblingCommand;
-import me.wega.rpgambling.config.ConfigManager;
 import me.wega.rpgambling.handler.*;
-import me.wega.rpgambling.listener.InventoryListener;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -17,8 +15,6 @@ public final class RPGambling extends JavaPlugin {
     private WorldGuardHandler worldGuard;
     @Getter
     private Economy vault;
-    @Getter
-    private ConfigManager configManager;
     @Getter
     private static RPGambling instance;
 
@@ -33,8 +29,6 @@ public final class RPGambling extends JavaPlugin {
         WorldGuard.getInstance().getPlatform().getSessionManager().registerHandler(CasinoTimeHandler.FACTORY, null);
         vault = Objects.requireNonNull(getServer().getServicesManager().getRegistration(Economy.class)).getProvider();
         new PlaceholderHandler().register();
-        configManager = new ConfigManager();
-        configManager.load();
         registerCommands();
         registerListeners();
     }
@@ -45,6 +39,5 @@ public final class RPGambling extends JavaPlugin {
 
     private void registerListeners() {
         PluginManager manager = getServer().getPluginManager();
-        manager.registerEvents(new InventoryListener(), this);
     }
 }
