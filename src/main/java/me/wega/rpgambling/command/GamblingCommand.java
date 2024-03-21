@@ -2,6 +2,7 @@ package me.wega.rpgambling.command;
 
 import dev.jorel.commandapi.CommandAPICommand;
 import me.wega.rpgambling.data.PlayerData;
+import me.wega.rpgambling.machines.slot.SlotRollMenu;
 
 public class GamblingCommand {
     public GamblingCommand() {
@@ -12,6 +13,10 @@ public class GamblingCommand {
         new CommandAPICommand("admingambling")
                 .withAliases("gambling admin");
         new CommandAPICommand("gambling")
+                .withSubcommand(new CommandAPICommand("test")
+                        .executesPlayer((sender, args) -> {
+                            new SlotRollMenu().show(sender);
+                        }))
             .withPermission("gambling.user")
             .withSubcommand(new CommandAPICommand("admin")
                 .withPermission("gambling.admin")
