@@ -1,4 +1,4 @@
-package me.wega.rpgambling;
+package me.wega.rpgambling.utils;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

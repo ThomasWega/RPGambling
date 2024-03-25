@@ -19,8 +19,9 @@ public class SlotRollMenu extends ChestGui {
     private final Random random = new Random();
     boolean spinning = false;
 
+    // TODO add SlotMachine class
     public SlotRollMenu() {
-        super(5, "Slots");
+        super(5, "\uE66C");
         this.initialize();
 
         this.setOnBottomClick(event -> {
@@ -67,7 +68,7 @@ public class SlotRollMenu extends ChestGui {
     public void rollOnce() {
         for (int i = 0; i < 5; i++) {
             LinkedList<GuiItem> columnItems = columns.get(i);
-            columnItems.addFirst(this.getRandomItem());
+            columnItems.addFirst(this.getRandomButton());
             columnItems.removeLast();
             for (int j = 0; j < 3; j++) {
                 columnPanes.get(i).addItem(columnItems.get(j), 0, j);
@@ -76,7 +77,7 @@ public class SlotRollMenu extends ChestGui {
     }
 
     private void handleWin() {
-        Map<SlotItem, Long> itemCounts = getWinningItems().stream()
+        Map<SlotItem, Long> itemCounts = getWinningButtons().stream()
                 .map(GuiItem::getItem)
                 .map(ItemStack::getItemMeta)
                 .map(ItemMeta::getPersistentDataContainer)
@@ -88,7 +89,7 @@ public class SlotRollMenu extends ChestGui {
         // TODO check for same items. Also create some example logic to handle the slots win (what items combination yields what win). Just like a real casino
     }
 
-    private List<GuiItem> getWinningItems() {
+    private List<GuiItem> getWinningButtons() {
         List<GuiItem> winningItems = new ArrayList<>();
         for (int i = 0; i < 5; i++)
             winningItems.add(columns.get(i).get(1));
@@ -96,7 +97,7 @@ public class SlotRollMenu extends ChestGui {
         return winningItems;
     }
 
-    private GuiItem getRandomItem() {
+    private GuiItem getRandomButton() {
         double randomNumber = random.nextDouble();
         double cumulativeProbability = 0.0;
 

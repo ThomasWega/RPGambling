@@ -2,7 +2,7 @@ package me.wega.rpgambling.machines.slot;
 
 import com.github.stefvanschie.inventoryframework.gui.GuiItem;
 import lombok.Getter;
-import me.wega.rpgambling.ItemBuilder;
+import me.wega.rpgambling.utils.ItemBuilder;
 import me.wega.rpgambling.RPGambling;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
