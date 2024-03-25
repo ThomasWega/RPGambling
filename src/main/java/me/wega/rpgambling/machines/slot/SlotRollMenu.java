@@ -5,20 +5,15 @@ import com.github.stefvanschie.inventoryframework.gui.type.ChestGui;
 import com.github.stefvanschie.inventoryframework.pane.StaticPane;
 import me.wega.rpgambling.RPGambling;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class SlotRollMenu extends ChestGui {
-    private static final GuiItem melon = new GuiItem(new ItemStack(Material.PINK_DYE));
-    private static final GuiItem lemon = new GuiItem(new ItemStack(Material.YELLOW_DYE));
-    private static final GuiItem cherry = new GuiItem(new ItemStack(Material.RED_DYE));
-    private static final GuiItem grape = new GuiItem(new ItemStack(Material.PURPLE_DYE));
-    private static final GuiItem star = new GuiItem(new ItemStack(Material.WHITE_DYE));
-
-    private final List<GuiItem> items = List.of(melon, lemon, cherry, grape, star);
-
     private final Map<Integer, LinkedList<GuiItem>> columns = new HashMap<>(5);
     private final Map<Integer, StaticPane> columnPanes = new HashMap<>(5);
     private final Random random = new Random();
@@ -29,7 +24,6 @@ public class SlotRollMenu extends ChestGui {
         this.initialize();
 
         this.setOnBottomClick(event -> {
-            System.out.println(spinning);
             if (!spinning)
                 rollTimes(20);
         });
@@ -45,7 +39,7 @@ public class SlotRollMenu extends ChestGui {
         for (int i = 0; i < 5; i++) {
             LinkedList<GuiItem> columnItems = new LinkedList<>();
             for (int j = 0; j < 3; j++) {
-                GuiItem item = items.get(j).copy();
+                GuiItem item = SlotItem.values()[j].getGuiItem().copy();
                 columnItems.add(item);
                 columnPanes.get(i).addItem(item, 0, j);
             }
@@ -62,7 +56,10 @@ public class SlotRollMenu extends ChestGui {
                 this.rollOnce();
                 this.update();
                 if ((finalI + 1) == times)
-                    Bukkit.getScheduler().runTaskLater(RPGambling.getInstance(), () -> spinning = false, 10L);
+                    Bukkit.getScheduler().runTaskLater(RPGambling.getInstance(), () -> {
+                        this.handleWin();
+                        spinning = false;
+                    }, 10L);
             }, delay);
         }
     }
@@ -70,7 +67,7 @@ public class SlotRollMenu extends ChestGui {
     public void rollOnce() {
         for (int i = 0; i < 5; i++) {
             LinkedList<GuiItem> columnItems = columns.get(i);
-            columnItems.addFirst(getRandomItem());
+            columnItems.addFirst(this.getRandomItem());
             columnItems.removeLast();
             for (int j = 0; j < 3; j++) {
                 columnPanes.get(i).addItem(columnItems.get(j), 0, j);
@@ -78,7 +75,38 @@ public class SlotRollMenu extends ChestGui {
         }
     }
 
+    private void handleWin() {
+        Map<SlotItem, Long> itemCounts = getWinningItems().stream()
+                .map(GuiItem::getItem)
+                .map(ItemStack::getItemMeta)
+                .map(ItemMeta::getPersistentDataContainer)
+                .map(pdc -> pdc.get(SlotItem.itemKey, PersistentDataType.STRING))
+                .map(SlotItem::valueOf)
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+
+        System.out.println(itemCounts);
+        // TODO check for same items. Also create some example logic to handle the slots win (what items combination yields what win). Just like a real casino
+    }
+
+    private List<GuiItem> getWinningItems() {
+        List<GuiItem> winningItems = new ArrayList<>();
+        for (int i = 0; i < 5; i++)
+            winningItems.add(columns.get(i).get(1));
+
+        return winningItems;
+    }
+
     private GuiItem getRandomItem() {
-        return items.get(random.nextInt(items.size())).copy();
+        double randomNumber = random.nextDouble();
+        double cumulativeProbability = 0.0;
+
+        for (SlotItem slotItem : SlotItem.values()) {
+            cumulativeProbability += slotItem.getChance();
+            if (randomNumber <= cumulativeProbability) {
+                return slotItem.getGuiItem().copy();
+            }
+        }
+
+        return null;
     }
 }
