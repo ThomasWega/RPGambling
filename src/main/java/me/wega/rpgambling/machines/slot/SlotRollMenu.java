@@ -3,93 +3,82 @@ package me.wega.rpgambling.machines.slot;
 import com.github.stefvanschie.inventoryframework.gui.GuiItem;
 import com.github.stefvanschie.inventoryframework.gui.type.ChestGui;
 import com.github.stefvanschie.inventoryframework.pane.StaticPane;
+import me.wega.rpgambling.RPGambling;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 public class SlotRollMenu extends ChestGui {
-    private static final ItemStack melon = new ItemStack(Material.PINK_DYE);
-    private static final ItemStack lemon = new ItemStack(Material.YELLOW_DYE);
-    private static final ItemStack cherry = new ItemStack(Material.RED_DYE);
-    private static final ItemStack grape = new ItemStack(Material.PURPLE_DYE);
-    private static final ItemStack star = new ItemStack(Material.WHITE_DYE);
+    private static final GuiItem melon = new GuiItem(new ItemStack(Material.PINK_DYE));
+    private static final GuiItem lemon = new GuiItem(new ItemStack(Material.YELLOW_DYE));
+    private static final GuiItem cherry = new GuiItem(new ItemStack(Material.RED_DYE));
+    private static final GuiItem grape = new GuiItem(new ItemStack(Material.PURPLE_DYE));
+    private static final GuiItem star = new GuiItem(new ItemStack(Material.WHITE_DYE));
 
-    private final List<ItemStack> items = List.of(melon, lemon, cherry, grape, star);
+    private final List<GuiItem> items = List.of(melon, lemon, cherry, grape, star);
 
-    private Set<GuiItem> row1Items = new LinkedHashSet<>();
-    private final StaticPane row1 = new StaticPane(1, 1, 8, 1);
-    private Set<GuiItem> row2Items = new LinkedHashSet<>();
-    private final StaticPane row2 = new StaticPane(1, 2, 8, 1);
-    private final StaticPane row3 = new StaticPane(1, 3, 8, 1);
-
+    private final Map<Integer, LinkedList<GuiItem>> columns = new HashMap<>(5);
+    private final Map<Integer, StaticPane> columnPanes = new HashMap<>(5);
+    private final Random random = new Random();
+    boolean spinning = false;
 
     public SlotRollMenu() {
         super(5, "Slots");
         this.initialize();
 
-        this.addPane(row1);
-        this.addPane(row2);
-        this.addPane(row3);
-
         this.setOnBottomClick(event -> {
-            System.out.println("ROLL");
-            this.roll();
-            this.update();
+            System.out.println(spinning);
+            if (!spinning)
+                rollTimes(20);
         });
     }
 
     private void initialize() {
         for (int i = 0; i < 5; i++) {
-            GuiItem g1 = new GuiItem(getRandomItem());
-            GuiItem g2 = new GuiItem(getRandomItem());
-            GuiItem g3 = new GuiItem(getRandomItem());
-
-            row1Items.add(g1);
-            row2Items.add(g2);
-
-            row1.addItem(g1, i, 0);
-            row2.addItem(g2, i, 0);
-            row3.addItem(g3, i, 0);
-        }
-    }
-
-    public void roll() {
-        // Roll for row3
-        row3.clear();
-        int i3 = 0;
-        for (GuiItem item : row2Items) {
-            row3.addItem(item, i3, 0);
-            i3++;
+            StaticPane column = new StaticPane(i + 1, 1, 1, 3);
+            columnPanes.put(i, column);
+            this.addPane(column);
         }
 
-        // Roll for row2
-        row2.clear();
-        row2Items = new LinkedHashSet<>();
-        int i2 = 0;
-        for (GuiItem item : row1Items) {
-            row2.addItem(item, i2, 0);
-            row2Items.add(item);
-            i2++;
-        }
-
-        // Roll for row1
-        row1.clear();
-        row1Items = new LinkedHashSet<>();
         for (int i = 0; i < 5; i++) {
-            GuiItem guiItem = new GuiItem(getRandomItem());
-            row1.addItem(guiItem, i, 0);
-            row1Items.add(guiItem);
+            LinkedList<GuiItem> columnItems = new LinkedList<>();
+            for (int j = 0; j < 3; j++) {
+                GuiItem item = items.get(j).copy();
+                columnItems.add(item);
+                columnPanes.get(i).addItem(item, 0, j);
+            }
+            columns.put(i, columnItems);
         }
     }
 
+    public void rollTimes(int times) {
+        spinning = true;
+        for (int i = 0; i < times; i++) {
+            long delay = (long) (3L * Math.exp(0.17 * i));  // Using an exponential function to increase delay
+            int finalI = i;
+            Bukkit.getScheduler().runTaskLater(RPGambling.getInstance(), () -> {
+                this.rollOnce();
+                this.update();
+                if ((finalI + 1) == times)
+                    Bukkit.getScheduler().runTaskLater(RPGambling.getInstance(), () -> spinning = false, 10L);
+            }, delay);
+        }
+    }
 
-    private final Random random = new Random();
+    public void rollOnce() {
+        for (int i = 0; i < 5; i++) {
+            LinkedList<GuiItem> columnItems = columns.get(i);
+            columnItems.addFirst(getRandomItem());
+            columnItems.removeLast();
+            for (int j = 0; j < 3; j++) {
+                columnPanes.get(i).addItem(columnItems.get(j), 0, j);
+            }
+        }
+    }
 
-    private ItemStack getRandomItem() {
-        return items.get(random.nextInt(items.size()));
+    private GuiItem getRandomItem() {
+        return items.get(random.nextInt(items.size())).copy();
     }
 }
