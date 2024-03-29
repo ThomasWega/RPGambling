@@ -32,7 +32,9 @@ public enum SlotItem {
                 .displayName(Component.empty())
                 .hideFlags()
                 .container(itemKey, PersistentDataType.STRING, name())
-                .build());
+                .build(),
+                event -> event.setCancelled(true)
+        );
     }
 
 }

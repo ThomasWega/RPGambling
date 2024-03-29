@@ -1,10 +1,14 @@
 package me.wega.rpgambling.machines.slot;
 
+import com.github.stefvanschie.inventoryframework.adventuresupport.StringHolder;
 import com.github.stefvanschie.inventoryframework.gui.GuiItem;
 import com.github.stefvanschie.inventoryframework.gui.type.ChestGui;
 import com.github.stefvanschie.inventoryframework.pane.StaticPane;
 import me.wega.rpgambling.RPGambling;
+import me.wega.rpgambling.utils.ItemBuilder;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
@@ -16,23 +20,19 @@ import java.util.stream.Collectors;
 public class SlotRollMenu extends ChestGui {
     private final Map<Integer, LinkedList<GuiItem>> columns = new HashMap<>(5);
     private final Map<Integer, StaticPane> columnPanes = new HashMap<>(5);
+    private final StaticPane rollPane = new StaticPane(4, 5, 3, 1);
     private final Random random = new Random();
     boolean spinning = false;
 
     // TODO add SlotMachine class
     public SlotRollMenu() {
-        super(5, "\uE66C");
+        super(5, StringHolder.deserialize("&f⻔⻔⻔⻔⻔⻔⻔⻔\uE66C"));
         this.initialize();
-
-        this.setOnBottomClick(event -> {
-            if (!spinning)
-                rollTimes(20);
-        });
     }
 
     private void initialize() {
         for (int i = 0; i < 5; i++) {
-            StaticPane column = new StaticPane(i + 1, 1, 1, 3);
+            StaticPane column = new StaticPane(i + 3, 1, 1, 3);
             columnPanes.put(i, column);
             this.addPane(column);
         }
@@ -45,6 +45,12 @@ public class SlotRollMenu extends ChestGui {
                 columnPanes.get(i).addItem(item, 0, j);
             }
             columns.put(i, columnItems);
+        }
+
+        this.addPane(rollPane);
+
+        for (int i = 0; i < 3; i++) {
+            this.rollPane.addItem(getRollItem(), i, 0);
         }
     }
 
@@ -109,5 +115,18 @@ public class SlotRollMenu extends ChestGui {
         }
 
         return null;
+    }
+
+    private GuiItem getRollItem() {
+        return new GuiItem(new ItemBuilder(Material.PAPER)
+                .displayName(Component.empty())
+                .hideFlags()
+                .build(),
+                event -> {
+                    event.setCancelled(true);
+                    if (!spinning)
+                        rollTimes(20);
+                }
+        );
     }
 }
