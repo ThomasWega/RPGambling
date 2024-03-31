@@ -11,25 +11,30 @@ import org.bukkit.persistence.PersistentDataType;
 
 @Getter
 public enum SlotItem {
-    MELON(Material.PINK_DYE, 0.25),
-    LEMON(Material.YELLOW_DYE, 0.3),
-    CHERRY(Material.RED_DYE, 0.15),
-    GRAPE(Material.PURPLE_DYE, 0.25),
-    STAR(Material.WHITE_DYE, 0.05);
+    SEVEN(501, 0.125),
+    CHERRIES(502, 0.125),
+    LEMON(503, 0.125),
+    PLUM(504, 0.125),
+    MELON(505, 0.125),
+    STAR(506, 0.125),
+    ORANGE(507, 0.125),
+    GRAPES(508, 0.125);
 
-    private final Material material;
+
+    private final int customModelData;
     private final double chance;
     public static final NamespacedKey itemKey = new NamespacedKey(RPGambling.getInstance(), "item-key");
 
 
-    SlotItem(Material material, double chance) {
-        this.material = material;
+    SlotItem(int customModelData, double chance) {
+        this.customModelData = customModelData;
         this.chance = chance;
     }
 
     public GuiItem getGuiItem() {
-        return new GuiItem(new ItemBuilder(material)
+        return new GuiItem(new ItemBuilder(Material.PAPER)
                 .displayName(Component.empty())
+                .customModel(customModelData)
                 .hideFlags()
                 .container(itemKey, PersistentDataType.STRING, name())
                 .build(),
