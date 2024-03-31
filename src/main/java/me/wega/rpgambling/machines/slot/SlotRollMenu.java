@@ -4,11 +4,14 @@ import com.github.stefvanschie.inventoryframework.adventuresupport.StringHolder;
 import com.github.stefvanschie.inventoryframework.gui.GuiItem;
 import com.github.stefvanschie.inventoryframework.gui.type.ChestGui;
 import com.github.stefvanschie.inventoryframework.pane.StaticPane;
+import me.wega.rpgambling.ChatConsumer;
 import me.wega.rpgambling.RPGambling;
 import me.wega.rpgambling.utils.ItemBuilder;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
@@ -59,7 +62,23 @@ public class SlotRollMenu extends ChestGui {
 
         betPane.fillWith(getChooseBetItem(), event -> {
             event.setCancelled(true);
-            // TODO finish
+            Player player = ((Player) event.getWhoClicked());
+            player.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
+            player.sendMessage("Write how much to bet or 'cancel'");
+            new ChatConsumer<Double>(RPGambling.getInstance())
+                    .onInput(player, ChatConsumer.Parser.DOUBLE, bet -> {
+                        player.sendMessage("Placed bet of " + bet);
+                        // TODO place an actual bet
+                        new SlotRollMenu().show(player);
+                    })
+                    .onCancel(player, () -> {
+                        player.sendMessage("cancelled betting");
+                        new SlotRollMenu().show(player);
+                    })
+                    .onUnparsable(player, s -> {
+                        player.sendMessage(s + " is not a valid number!");
+                        player.sendMessage("Write how much to bet or 'cancel'");
+                    });
         });
     }
 

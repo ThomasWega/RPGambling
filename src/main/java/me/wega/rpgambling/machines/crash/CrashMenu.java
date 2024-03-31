@@ -5,6 +5,7 @@ import com.github.stefvanschie.inventoryframework.gui.type.ChestGui;
 import com.github.stefvanschie.inventoryframework.pane.OutlinePane;
 import com.github.stefvanschie.inventoryframework.pane.StaticPane;
 import io.papermc.paper.event.player.AsyncChatEvent;
+import me.wega.rpgambling.ChatConsumer;
 import me.wega.rpgambling.RPGambling;
 import me.wega.rpgambling.utils.ColorUtils;
 import me.wega.rpgambling.utils.ItemBuilder;
@@ -115,7 +116,20 @@ public class CrashMenu extends ChestGui implements Listener {
                     Player player = ((Player) event.getWhoClicked());
                     player.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
                     player.sendMessage("Write how much to bet or 'cancel'");
-                    chatBetting.add(player.getUniqueId());
+                    new ChatConsumer<Double>(RPGambling.getInstance())
+                            .onInput(player, ChatConsumer.Parser.DOUBLE, bet -> {
+                                player.sendMessage("Placed bet of " + bet);
+                                crashMachine.setBet(player, bet);
+                                new CrashMenu(this.crashMachine).show(player);
+                            })
+                            .onCancel(player, () -> {
+                                player.sendMessage("cancelled betting");
+                                new CrashMenu(this.crashMachine).show(player);
+                            })
+                            .onUnparsable(player, s -> {
+                                player.sendMessage(s + " is not a valid number!");
+                                player.sendMessage("Write how much to bet or 'cancel'");
+                            });
                 });
     }
 
