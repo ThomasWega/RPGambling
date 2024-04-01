@@ -17,12 +17,12 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import java.util.List;
 import java.util.Map;
 
-public class CrashMenu extends ChestGui {
+public class CrashMachineMenu extends ChestGui {
     private final CrashMachine crashMachine;
     private final StaticPane buttonAddBetPane = new StaticPane(0, 5, 9, 1);
     private final OutlinePane betsPane = new OutlinePane(2, 1, 5, 3);
 
-    public CrashMenu(CrashMachine crashMachine) {
+    public CrashMachineMenu(CrashMachine crashMachine) {
         super(6, "Crash");
         this.crashMachine = crashMachine;
         this.initialize();
@@ -114,11 +114,11 @@ public class CrashMenu extends ChestGui {
                             .onInput(player, ChatConsumer.Parser.DOUBLE, bet -> {
                                 player.sendMessage("Placed bet of " + bet);
                                 crashMachine.setBet(player, bet);
-                                new CrashMenu(this.crashMachine).show(player);
+                                new CrashMachineMenu(this.crashMachine).show(player);
                             })
                             .onCancel(player, () -> {
                                 player.sendMessage("cancelled betting");
-                                new CrashMenu(this.crashMachine).show(player);
+                                new CrashMachineMenu(this.crashMachine).show(player);
                             })
                             .onUnparsable(player, s -> {
                                 player.sendMessage(s + " is not a valid number!");

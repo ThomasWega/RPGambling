@@ -20,7 +20,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class SlotRollMenu extends ChestGui {
+public class SlotMachineMenu extends ChestGui {
     private final Map<Integer, LinkedList<GuiItem>> columns = new HashMap<>(5);
     private final Map<Integer, StaticPane> columnPanes = new HashMap<>(5);
     private final StaticPane rollPane = new StaticPane(4, 5, 3, 1);
@@ -29,7 +29,7 @@ public class SlotRollMenu extends ChestGui {
     boolean spinning = false;
 
     // TODO add SlotMachine class
-    public SlotRollMenu() {
+    public SlotMachineMenu() {
         super(6, StringHolder.deserialize("&f⻔⻔⻔⻔⻔⻔⻔⻔\uE66C"));
         this.initialize();
     }
@@ -71,11 +71,11 @@ public class SlotRollMenu extends ChestGui {
                     .onInput(player, ChatConsumer.Parser.DOUBLE, bet -> {
                         player.sendMessage("Placed bet of " + bet);
                         // TODO place an actual bet
-                        new SlotRollMenu().show(player);
+                        new SlotMachineMenu().show(player);
                     })
                     .onCancel(player, () -> {
                         player.sendMessage("cancelled betting");
-                        new SlotRollMenu().show(player);
+                        new SlotMachineMenu().show(player);
                     })
                     .onUnparsable(player, s -> {
                         player.sendMessage(s + " is not a valid number!");
