@@ -1,6 +1,7 @@
 package me.wega.rpgambling;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -11,22 +12,22 @@ import org.bukkit.plugin.Plugin;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 public class ChatCallback<T> implements Listener {
     private final Plugin plugin;
     private static final Map<UUID, ChatCallback<?>> runningChatConsumers = new HashMap<>();
-    private final Function<String, T> parser;
+    private final AbstractParser<T>[] parsers;
     private Consumer<T> inputConsumer;
-    private Consumer<String> unparsedConsumer;
+    private BiConsumer<AbstractParser<T>, String> unparsedConsumer;
     private Runnable cancelConsumer;
     private final Player player;
 
-    public ChatCallback(Plugin plugin, Player player, Function<String, T> parser) {
+    public ChatCallback(Plugin plugin, Player player, AbstractParser<T>... parsers) {
         this.plugin = plugin;
         this.player = player;
-        this.parser = parser;
+        this.parsers = parsers;
         runningChatConsumers.put(player.getUniqueId(), this);
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
@@ -41,7 +42,7 @@ public class ChatCallback<T> implements Listener {
         return this;
     }
 
-    public ChatCallback<T> onUnparsable(Consumer<String> callback) {
+    public ChatCallback<T> onUnparsable(BiConsumer<AbstractParser<T>, String> callback) {
         unparsedConsumer = callback;
         return this;
     }
@@ -52,7 +53,6 @@ public class ChatCallback<T> implements Listener {
         cancel();
     }
 
-    // event is cancelled because of some plugin
     @EventHandler
     private void onPlayerChat(PlayerChatEvent event) {
         if (inputConsumer == null && cancelConsumer == null && unparsedConsumer == null) return;
@@ -67,14 +67,17 @@ public class ChatCallback<T> implements Listener {
         }
 
         // Execute the callback with the parsed value
-        T parsedValue = parser.apply(msg);
+        T parsedValue = null;
+        for (AbstractParser<T> parser : parsers) {
+            parsedValue = parser.parse(msg);
 
-        if (parsedValue == null) {
-            if (unparsedConsumer != null) {
-                unparsedConsumer.accept(msg);
+            if (parsedValue == null) {
+                if (unparsedConsumer != null) {
+                    unparsedConsumer.accept(parser, msg);
+                    return;
+                }
                 return;
             }
-            return;
         }
 
         if (inputConsumer != null)
@@ -90,21 +93,54 @@ public class ChatCallback<T> implements Listener {
     }
 
     @Getter
-    public static class Parser {
-        public static final Function<String, String> STRING = input -> input;
-        public static final Function<String, Integer> INT = input -> {
+    public static abstract class AbstractParser<T> {
+        public abstract T parse(String input);
+    }
+
+    public static class StringParser extends AbstractParser<String> {
+        @Override
+        public String parse(String input) {
+            return input;
+        }
+    }
+
+    public static class IntParser extends AbstractParser<Integer> {
+        @Override
+        public Integer parse(String input) {
             try {
                 return Integer.valueOf(input);
             } catch (NumberFormatException e) {
                 return null;
             }
-        };
-        public static final Function<String, Double> DOUBLE = input -> {
+        }
+    }
+
+    public static class DoubleParser extends AbstractParser<Double> {
+        @Override
+        public Double parse(String input) {
             try {
                 return Double.valueOf(input);
             } catch (NumberFormatException e) {
                 return null;
             }
-        };
+        }
+    }
+
+    @RequiredArgsConstructor
+    @Getter
+    public static class MinDoubleParser extends AbstractParser<Double> {
+        private final double min;
+
+        @Override
+        public Double parse(String input) {
+            try {
+                double dNum = Double.parseDouble(input);
+                if (dNum < min)
+                    return null;
+                return dNum;
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
     }
 }

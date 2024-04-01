@@ -34,12 +34,12 @@ public class SlotMachineMenu extends ChestGui {
     public SlotMachineMenu(SlotMachine slotMachine) {
         super(6, StringHolder.deserialize("&f⻔⻔⻔⻔⻔⻔⻔⻔\uE66C"));
         this.slotMachine = slotMachine;
-        this.initialize();
     }
 
     @Override
     public void show(@NotNull HumanEntity humanEntity) {
         this.player = ((Player) humanEntity);
+        this.initialize();
         super.show(humanEntity);
     }
 

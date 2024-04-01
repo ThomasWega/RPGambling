@@ -72,7 +72,7 @@ public class BetMenu extends ChestGui {
                     event.setCancelled(true);
                     player.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
                     player.sendMessage("Write how much to bet or 'cancel'");
-                    new ChatCallback<>(RPGambling.getInstance(), player, ChatCallback.Parser.DOUBLE)
+                    new ChatCallback<>(RPGambling.getInstance(), player, new ChatCallback.DoubleParser(), new ChatCallback.MinDoubleParser(100))
                             .onInput(bet -> {
                                 player.sendMessage("Placed bet of " + bet);
                                 machine.setBet(player, bet);
@@ -82,7 +82,12 @@ public class BetMenu extends ChestGui {
                                 player.sendMessage("cancelled betting");
                                 afterBetAction.accept(event);
                             })
-                            .onUnparsable(s -> {
+                            .onUnparsable((parser, s) -> {
+                                if (parser instanceof ChatCallback.MinDoubleParser minDoubleParser) {
+                                    player.sendMessage("Minimum bet is " + minDoubleParser.getMin());
+                                    player.sendMessage("Write how much to bet or 'cancel'");
+                                    return;
+                                }
                                 player.sendMessage(s + " is not a valid number!");
                                 player.sendMessage("Write how much to bet or 'cancel'");
                             });
