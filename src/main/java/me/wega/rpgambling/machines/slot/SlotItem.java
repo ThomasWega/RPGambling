@@ -9,7 +9,6 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.persistence.PersistentDataType;
 
-import java.util.Arrays;
 
 @Getter
 public enum SlotItem {
@@ -37,7 +36,6 @@ public enum SlotItem {
         if (count < 2)
             return 0;
 
-        System.out.println(Arrays.toString(multipliers));
         return multipliers[count - 2];
     }
 
