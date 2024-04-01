@@ -43,8 +43,8 @@ public enum SlotItem {
         return new GuiItem(new ItemBuilder(Material.PAPER)
                 .displayName(Component.empty())
                 .customModel(customModelData)
-                .hideFlags()
                 .container(itemKey, PersistentDataType.STRING, name())
+                .hideFlags()
                 .build(),
                 event -> event.setCancelled(true)
         );

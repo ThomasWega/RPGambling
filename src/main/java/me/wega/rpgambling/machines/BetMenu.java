@@ -48,8 +48,8 @@ public class BetMenu extends ChestGui {
 
     private GuiItem getBetItem(Material material, double betAmount) {
         return new GuiItem(new ItemBuilder(material)
-                .hideFlags()
                 .displayName(Component.text(betAmount))
+                .hideFlags()
                 .build(),
                 event -> {
                     event.setCancelled(true);

@@ -120,16 +120,16 @@ public class CrashMachineMenu extends ChestGui {
     private ItemStack getCloseItem() {
         return new ItemBuilder(Material.PAPER)
                 .displayName(Component.text("Close"))
-                .hideFlags()
                 .customModel(3)
+                .hideFlags()
                 .build();
     }
 
     private ItemStack getPlaceBetItem() {
         return new ItemBuilder(Material.PAPER)
                 .displayName(Component.text("Make a bet"))
-                .hideFlags()
                 .customModel(3)
+                .hideFlags()
                 .build();
     }
 }
