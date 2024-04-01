@@ -24,7 +24,7 @@ public class CrashMachineMenu extends ChestGui {
     private final CrashMachine crashMachine;
     private final StaticPane placeBetsPane = new StaticPane(1, 5, 3, 1);
     private final StaticPane closePane = new StaticPane(5, 5, 3, 1);
-    private final OutlinePane betsPane = new OutlinePane(2, 1, 5, 3);
+    private final OutlinePane betsPane = new OutlinePane(1, 1, 7, 3);
     private final Economy vault = RPGambling.getInstance().getVault();
 
     public CrashMachineMenu(CrashMachine crashMachine) {
