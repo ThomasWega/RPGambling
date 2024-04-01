@@ -15,14 +15,14 @@ import java.util.function.Predicate;
 
 public class ChatCallback<T> implements Listener {
     private static final Map<UUID, ChatCallback<?>> runningChatConsumers = new HashMap<>();
-    private final Parser<T> parser;
+    private final IParser<T> parser;
     private Consumer<T> onSuccess;
     private Consumer<Player> onCancel;
     private Consumer<String> onFail;
     private Predicate<T> onCondition;
     private final Player player;
 
-    public ChatCallback(Plugin plugin, Player player, Parser<T> parser) {
+    public ChatCallback(Plugin plugin, Player player, IParser<T> parser) {
         this.player = player;
         this.parser = parser;
         ChatCallback<?> previousCallback = runningChatConsumers.put(player.getUniqueId(), this);
@@ -90,14 +90,14 @@ public class ChatCallback<T> implements Listener {
         runningChatConsumers.remove(player.getUniqueId());
     }
 
-    public interface Parser<T> {
+    public interface IParser<T> {
         T parse(String input);
     }
 
-    public static class Parsers {
-        public static final Parser<String> STRING = input -> input;
+    public static class Parser {
+        public static final IParser<String> STRING = input -> input;
 
-        public static final Parser<Integer> INTEGER = input -> {
+        public static final IParser<Integer> INTEGER = input -> {
             try {
                 return Integer.valueOf(input);
             } catch (NumberFormatException e) {
@@ -105,7 +105,7 @@ public class ChatCallback<T> implements Listener {
             }
         };
 
-        public static final Parser<Double> DOUBLE = input -> {
+        public static final IParser<Double> DOUBLE = input -> {
             try {
                 return Double.valueOf(input);
             } catch (NumberFormatException e) {

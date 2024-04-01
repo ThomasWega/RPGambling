@@ -72,7 +72,7 @@ public class BetMenu extends ChestGui {
                     event.setCancelled(true);
                     player.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
                     player.sendMessage("Write how much to bet or 'cancel'");
-                    new ChatCallback<>(RPGambling.getInstance(), player, ChatCallback.Parsers.DOUBLE)
+                    new ChatCallback<>(RPGambling.getInstance(), player, ChatCallback.Parser.DOUBLE)
                             .onCondition(bet -> {
                                 if (bet < minBet) {
                                     player.sendMessage("Minimum bet is " + minBet);
