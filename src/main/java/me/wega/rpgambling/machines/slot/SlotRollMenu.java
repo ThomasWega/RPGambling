@@ -56,8 +56,10 @@ public class SlotRollMenu extends ChestGui {
 
         rollPane.fillWith(getRollItem(), event -> {
             event.setCancelled(true);
-            if (!spinning)
-                rollTimes(20);
+            if (!spinning) {
+                Player player = ((Player) event.getWhoClicked());
+                rollTimes(player, 20);
+            }
         });
 
         betPane.fillWith(getChooseBetItem(), event -> {
@@ -82,7 +84,7 @@ public class SlotRollMenu extends ChestGui {
         });
     }
 
-    public void rollTimes(int times) {
+    public void rollTimes(Player player, int times) {
         spinning = true;
         for (int i = 0; i < times; i++) {
             long delay = (long) (3L * Math.exp(0.17 * i));  // Using an exponential function to increase delay
@@ -92,7 +94,7 @@ public class SlotRollMenu extends ChestGui {
                 this.update();
                 if ((finalI + 1) == times)
                     Bukkit.getScheduler().runTaskLater(RPGambling.getInstance(), () -> {
-                        this.handleWin();
+                        this.handleWin(player);
                         spinning = false;
                     }, 10L);
             }, delay);
@@ -110,7 +112,7 @@ public class SlotRollMenu extends ChestGui {
         }
     }
 
-    private void handleWin() {
+    private void handleWin(Player player) {
         Map<SlotItem, Long> itemCounts = getWinningButtons().stream()
                 .map(GuiItem::getItem)
                 .map(ItemStack::getItemMeta)
@@ -119,9 +121,22 @@ public class SlotRollMenu extends ChestGui {
                 .map(SlotItem::valueOf)
                 .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
 
-        System.out.println(itemCounts);
-        // TODO check for same items. Also create some example logic to handle the slots win (what items combination yields what win). Just like a real casino
+        int multiplier = 0;
+
+
+        for (SlotItem item : itemCounts.keySet()) {
+            int count = Math.toIntExact(itemCounts.get(item));
+            multiplier = Math.max(multiplier, item.getMultiplier(count));
+        }
+
+        if (multiplier > 0) {
+            double reward = 0; // TODO use bet
+            player.sendMessage("Congratulations! You won " + multiplier + "x your bet, which is " + reward + "!");
+        } else {
+            player.sendMessage("Better luck next time!");
+        }
     }
+
 
     private List<GuiItem> getWinningButtons() {
         List<GuiItem> winningItems = new ArrayList<>();
