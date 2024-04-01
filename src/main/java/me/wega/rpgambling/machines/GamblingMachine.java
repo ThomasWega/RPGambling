@@ -21,7 +21,6 @@ public abstract class GamblingMachine {
     }
 
     public void setBet(Player player, double amount) {
-        // TODO add vault support
         bets.put(player.getUniqueId(), amount);
     }
 
@@ -34,7 +33,6 @@ public abstract class GamblingMachine {
     }
 
     public void removeBet(Player player) {
-        // TODO add vault support
         bets.remove(player.getUniqueId());
     }
 }
