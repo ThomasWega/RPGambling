@@ -4,33 +4,27 @@ import com.github.stefvanschie.inventoryframework.gui.GuiItem;
 import com.github.stefvanschie.inventoryframework.gui.type.ChestGui;
 import com.github.stefvanschie.inventoryframework.pane.OutlinePane;
 import com.github.stefvanschie.inventoryframework.pane.StaticPane;
-import io.papermc.paper.event.player.AsyncChatEvent;
 import me.wega.rpgambling.ChatConsumer;
 import me.wega.rpgambling.RPGambling;
-import me.wega.rpgambling.utils.ColorUtils;
 import me.wega.rpgambling.utils.ItemBuilder;
 import me.wega.rpgambling.utils.SkullCreator;
 import net.kyori.adventure.text.Component;
-import org.apache.commons.lang.math.NumberUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
-public class CrashMenu extends ChestGui implements Listener {
+public class CrashMenu extends ChestGui {
     private final CrashMachine crashMachine;
-    private final Set<UUID> chatBetting = new HashSet<>();
     private final StaticPane buttonAddBetPane = new StaticPane(0, 5, 9, 1);
     private final OutlinePane betsPane = new OutlinePane(2, 1, 5, 3);
 
     public CrashMenu(CrashMachine crashMachine) {
         super(6, "Crash");
         this.crashMachine = crashMachine;
-        Bukkit.getPluginManager().registerEvents(this, RPGambling.getInstance());
         this.initialize();
     }
 
@@ -131,23 +125,5 @@ public class CrashMenu extends ChestGui implements Listener {
                                 player.sendMessage("Write how much to bet or 'cancel'");
                             });
                 });
-    }
-
-    @EventHandler
-    private void onBet(AsyncChatEvent event) {
-        Player player = event.getPlayer();
-        if (!chatBetting.contains(player.getUniqueId())) return;
-        event.setCancelled(true);
-        String msg = ColorUtils.stripColor(event.message());
-        if (!NumberUtils.isNumber(msg)) {
-            player.sendMessage(msg + " is not a valid number!");
-            player.sendMessage("Write how much to bet or 'cancel'");
-            return;
-        }
-        double betNum = Double.parseDouble(msg);
-        player.sendMessage("Placed bet of " + betNum);
-        chatBetting.remove(player.getUniqueId());
-        crashMachine.setBet(player, betNum);
-        Bukkit.getScheduler().runTask(RPGambling.getInstance(), () -> new CrashMenu(this.crashMachine).show(player));
     }
 }
