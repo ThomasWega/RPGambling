@@ -4,17 +4,18 @@ import com.github.stefvanschie.inventoryframework.adventuresupport.StringHolder;
 import com.github.stefvanschie.inventoryframework.gui.GuiItem;
 import com.github.stefvanschie.inventoryframework.gui.type.ChestGui;
 import com.github.stefvanschie.inventoryframework.pane.StaticPane;
-import me.wega.rpgambling.ChatConsumer;
 import me.wega.rpgambling.RPGambling;
+import me.wega.rpgambling.machines.BetMenu;
 import me.wega.rpgambling.utils.ItemBuilder;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.function.Function;
@@ -26,12 +27,20 @@ public class SlotMachineMenu extends ChestGui {
     private final StaticPane rollPane = new StaticPane(4, 5, 3, 1);
     private final StaticPane betPane = new StaticPane(0, 3, 2, 3);
     private final Random random = new Random();
+    private final SlotMachine slotMachine;
     boolean spinning = false;
+    private Player player;
 
-    // TODO add SlotMachine class
-    public SlotMachineMenu() {
+    public SlotMachineMenu(SlotMachine slotMachine) {
         super(6, StringHolder.deserialize("&f⻔⻔⻔⻔⻔⻔⻔⻔\uE66C"));
+        this.slotMachine = slotMachine;
         this.initialize();
+    }
+
+    @Override
+    public void show(@NotNull HumanEntity humanEntity) {
+        this.player = ((Player) humanEntity);
+        super.show(humanEntity);
     }
 
     private void initialize() {
@@ -59,28 +68,20 @@ public class SlotMachineMenu extends ChestGui {
             if (!spinning) {
                 Player player = ((Player) event.getWhoClicked());
                 rollTimes(player, 20);
+                // TODO take away bet money
             }
         });
 
         betPane.fillWith(getChooseBetItem(), event -> {
             event.setCancelled(true);
             Player player = ((Player) event.getWhoClicked());
-            player.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
-            player.sendMessage("Write how much to bet or 'cancel'");
-            new ChatConsumer<Double>(RPGambling.getInstance())
-                    .onInput(player, ChatConsumer.Parser.DOUBLE, bet -> {
-                        player.sendMessage("Placed bet of " + bet);
-                        // TODO place an actual bet
-                        new SlotMachineMenu().show(player);
-                    })
-                    .onCancel(player, () -> {
-                        player.sendMessage("cancelled betting");
-                        new SlotMachineMenu().show(player);
-                    })
-                    .onUnparsable(player, s -> {
-                        player.sendMessage(s + " is not a valid number!");
-                        player.sendMessage("Write how much to bet or 'cancel'");
-                    });
+            new BetMenu(slotMachine, e -> new SlotMachineMenu(slotMachine).show(player)).show(player);
+        });
+
+        setOnClose(event -> {
+            Player player = ((Player) event.getPlayer());
+            if (!spinning)
+                slotMachine.removeBet(player);
         });
     }
 
@@ -130,7 +131,7 @@ public class SlotMachineMenu extends ChestGui {
         }
 
         if (multiplier > 0) {
-            double reward = 0; // TODO use bet
+            double reward = slotMachine.getBetOrDefault(player) * multiplier;
             player.sendMessage("Congratulations! You won " + multiplier + "x your bet, which is " + reward + "!");
         } else {
             player.sendMessage("Better luck next time!");
@@ -162,7 +163,7 @@ public class SlotMachineMenu extends ChestGui {
 
     private ItemStack getChooseBetItem() {
         return new ItemBuilder(Material.PAPER)
-                .displayName(Component.empty())
+                .displayName(Component.text("Current bet - " + slotMachine.getBet(player)))
                 .customModel(3)
                 .hideFlags()
                 .build();
@@ -170,7 +171,7 @@ public class SlotMachineMenu extends ChestGui {
 
     private ItemStack getRollItem() {
         return new ItemBuilder(Material.PAPER)
-                .displayName(Component.empty())
+                .displayName(Component.text("Spin - " + slotMachine.getBetOrDefault(player)))
                 .customModel(3)
                 .hideFlags()
                 .build();

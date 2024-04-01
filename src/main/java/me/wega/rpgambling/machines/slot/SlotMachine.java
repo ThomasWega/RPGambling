@@ -1,4 +1,4 @@
-package me.wega.rpgambling.machines.crash;
+package me.wega.rpgambling.machines.slot;
 
 import lombok.Getter;
 import me.wega.rpgambling.machines.GamblingMachine;
@@ -8,13 +8,13 @@ import java.util.LinkedHashMap;
 import java.util.UUID;
 
 @Getter
-public class CrashMachine extends GamblingMachine {
+public class SlotMachine extends GamblingMachine {
 
-    public CrashMachine(Location location, LinkedHashMap<UUID, Double> bets) {
+    public SlotMachine(Location location, LinkedHashMap<UUID, Double> bets) {
         super(location, bets);
     }
 
-    public CrashMachine(Location location) {
+    public SlotMachine(Location location) {
         super(location);
     }
 }

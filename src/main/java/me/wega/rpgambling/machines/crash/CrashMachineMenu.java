@@ -4,7 +4,7 @@ import com.github.stefvanschie.inventoryframework.gui.GuiItem;
 import com.github.stefvanschie.inventoryframework.gui.type.ChestGui;
 import com.github.stefvanschie.inventoryframework.pane.OutlinePane;
 import com.github.stefvanschie.inventoryframework.pane.StaticPane;
-import me.wega.rpgambling.ChatConsumer;
+import me.wega.rpgambling.ChatCallback;
 import me.wega.rpgambling.RPGambling;
 import me.wega.rpgambling.utils.ItemBuilder;
 import me.wega.rpgambling.utils.SkullCreator;
@@ -110,17 +110,17 @@ public class CrashMachineMenu extends ChestGui {
                     Player player = ((Player) event.getWhoClicked());
                     player.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
                     player.sendMessage("Write how much to bet or 'cancel'");
-                    new ChatConsumer<Double>(RPGambling.getInstance())
-                            .onInput(player, ChatConsumer.Parser.DOUBLE, bet -> {
+                    new ChatCallback<>(RPGambling.getInstance(), player, ChatCallback.Parser.DOUBLE)
+                            .onInput(bet -> {
                                 player.sendMessage("Placed bet of " + bet);
                                 crashMachine.setBet(player, bet);
                                 new CrashMachineMenu(this.crashMachine).show(player);
                             })
-                            .onCancel(player, () -> {
+                            .onCancel(() -> {
                                 player.sendMessage("cancelled betting");
                                 new CrashMachineMenu(this.crashMachine).show(player);
                             })
-                            .onUnparsable(player, s -> {
+                            .onUnparsable(s -> {
                                 player.sendMessage(s + " is not a valid number!");
                                 player.sendMessage("Write how much to bet or 'cancel'");
                             });
