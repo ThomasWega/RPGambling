@@ -60,7 +60,7 @@ public class BetMenu extends ChestGui {
         );
     }
 
-    // TODO minimum bet 100!
+    private final double minBet = 100;
 
     private GuiItem getCustomBetItem() {
         return new GuiItem(new ItemBuilder(Material.HONEYCOMB)
@@ -72,22 +72,23 @@ public class BetMenu extends ChestGui {
                     event.setCancelled(true);
                     player.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
                     player.sendMessage("Write how much to bet or 'cancel'");
-                    new ChatCallback<>(RPGambling.getInstance(), player, new ChatCallback.DoubleParser(), new ChatCallback.MinDoubleParser(100))
-                            .onInput(bet -> {
+                    new ChatCallback<>(RPGambling.getInstance(), player, ChatCallback.Parsers.DOUBLE)
+                            .onSuccess(bet -> {
+                                if (bet < minBet) {
+                                    player.sendMessage("Minimum bet is " + minBet);
+                                    player.sendMessage("Write how much to bet or 'cancel'");
+                                    return false;
+                                }
                                 player.sendMessage("Placed bet of " + bet);
                                 machine.setBet(player, bet);
                                 afterBetAction.accept(event);
+                                return true;
                             })
-                            .onCancel(() -> {
-                                player.sendMessage("cancelled betting");
+                            .onCancel(player1 -> {
+                                player1.sendMessage("cancelled betting");
                                 afterBetAction.accept(event);
                             })
-                            .onUnparsable((parser, s) -> {
-                                if (parser instanceof ChatCallback.MinDoubleParser minDoubleParser) {
-                                    player.sendMessage("Minimum bet is " + minDoubleParser.getMin());
-                                    player.sendMessage("Write how much to bet or 'cancel'");
-                                    return;
-                                }
+                            .onFail(s -> {
                                 player.sendMessage(s + " is not a valid number!");
                                 player.sendMessage("Write how much to bet or 'cancel'");
                             });
