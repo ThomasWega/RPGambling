@@ -16,9 +16,10 @@ import java.util.function.Predicate;
 public class ChatCallback<T> implements Listener {
     private static final Map<UUID, ChatCallback<?>> runningChatConsumers = new HashMap<>();
     private final Parser<T> parser;
-    private Predicate<T> onSuccess;
+    private Consumer<T> onSuccess;
     private Consumer<Player> onCancel;
     private Consumer<String> onFail;
+    private Predicate<T> onCondition;
     private final Player player;
 
     public ChatCallback(Plugin plugin, Player player, Parser<T> parser) {
@@ -30,7 +31,7 @@ public class ChatCallback<T> implements Listener {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
-    public ChatCallback<T> onSuccess(Predicate<T> callback) {
+    public ChatCallback<T> onSuccess(Consumer<T> callback) {
         onSuccess = callback;
         return this;
     }
@@ -42,6 +43,11 @@ public class ChatCallback<T> implements Listener {
 
     public ChatCallback<T> onFail(Consumer<String> callback) {
         onFail = callback;
+        return this;
+    }
+
+    public ChatCallback<T> onCondition(Predicate<T> condition) {
+        onCondition = condition;
         return this;
     }
 
@@ -70,8 +76,12 @@ public class ChatCallback<T> implements Listener {
             return;
         }
 
-        if (onSuccess != null && onSuccess.test(parsedValue))
+        if (!onCondition.test(parsedValue)) return;
+
+        if (onSuccess != null) {
+            onSuccess.accept(parsedValue);
             cancel();
+        }
     }
 
     public void cancel() {
