@@ -1,5 +1,6 @@
 package me.wega.rpgambling.machines.crash;
 
+import com.github.stefvanschie.inventoryframework.adventuresupport.StringHolder;
 import com.github.stefvanschie.inventoryframework.gui.GuiItem;
 import com.github.stefvanschie.inventoryframework.gui.type.ChestGui;
 import com.github.stefvanschie.inventoryframework.pane.OutlinePane;
@@ -14,30 +15,49 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
 import java.util.Map;
 
 public class CrashMachineMenu extends ChestGui {
     private final CrashMachine crashMachine;
-    private final StaticPane buttonAddBetPane = new StaticPane(0, 5, 9, 1);
+    private final StaticPane placeBetsPane = new StaticPane(1, 5, 3, 1);
+    private final StaticPane closePane = new StaticPane(5, 5, 3, 1);
     private final OutlinePane betsPane = new OutlinePane(2, 1, 5, 3);
     private final Economy vault = RPGambling.getInstance().getVault();
 
     public CrashMachineMenu(CrashMachine crashMachine) {
-        super(6, "Crash");
+        super(6, StringHolder.deserialize("&f⻔⻔⻔⻔⻔⻔⻔⻔\uE40A"));
         this.crashMachine = crashMachine;
         this.initialize();
     }
 
     private void initialize() {
-        addPane(buttonAddBetPane);
+        addPane(placeBetsPane);
+        addPane(closePane);
         addPane(betsPane);
 
-        buttonAddBetPane.addItem(getPlaceBetButton(), 2, 0);
-        buttonAddBetPane.addItem(getPlaceBetButton(), 3, 0);
-        buttonAddBetPane.addItem(getCloseButton(), 5, 0);
-        buttonAddBetPane.addItem(getCloseButton(), 6, 0);
+        placeBetsPane.fillWith(getPlaceBetItem(), event -> {
+            event.setCancelled(true);
+            Player player = ((Player) event.getWhoClicked());
+            new BetMenu(crashMachine, e -> {
+                double betAmount = crashMachine.getBet(player);
+                if (!vault.has(player, betAmount)) {
+                    player.sendMessage("Not enough funds");
+                    return;
+                }
+
+                vault.withdrawPlayer(player, betAmount);
+                new CrashMachineMenu(crashMachine).show(player);
+
+            }).show(player);
+        });
+
+        closePane.fillWith(getCloseItem(), event -> {
+            event.setCancelled(true);
+            event.getWhoClicked().closeInventory(InventoryCloseEvent.Reason.PLUGIN);
+        });
 
         /*
          I know, I know. This is super stupid, but I wasn't able to find a different way to update
@@ -75,6 +95,7 @@ public class CrashMachineMenu extends ChestGui {
                             Component.text("bet: " + betAmount),
                             Component.text("Click to remove your bet")
                     ))
+                    .hideFlags()
                     .build(),
                     event -> {
                         Player better2 = ((Player) event.getWhoClicked());
@@ -91,39 +112,24 @@ public class CrashMachineMenu extends ChestGui {
                 .lore(List.of(
                         Component.text("bet: " + betAmount)
                 ))
+                .hideFlags()
                 .build()
         );
     }
 
-    private GuiItem getCloseButton() {
-        return new GuiItem(new ItemBuilder(Material.PAPER)
+    private ItemStack getCloseItem() {
+        return new ItemBuilder(Material.PAPER)
                 .displayName(Component.text("Close"))
-                .build(),
-                event -> {
-                    event.setCancelled(true);
-                    event.getWhoClicked().closeInventory(InventoryCloseEvent.Reason.PLUGIN);
-                }
-        );
+                .hideFlags()
+                .customModel(3)
+                .build();
     }
 
-    private GuiItem getPlaceBetButton() {
-        return new GuiItem(new ItemBuilder(Material.PAPER)
+    private ItemStack getPlaceBetItem() {
+        return new ItemBuilder(Material.PAPER)
                 .displayName(Component.text("Make a bet"))
-                .build(),
-                event -> {
-                    event.setCancelled(true);
-                    Player player = ((Player) event.getWhoClicked());
-                    new BetMenu(crashMachine, e -> {
-                        double betAmount = crashMachine.getBet(player);
-                        if (!vault.has(player, betAmount)) {
-                            player.sendMessage("Not enough funds");
-                            return;
-                        }
-
-                        vault.withdrawPlayer(player, betAmount);
-                        new CrashMachineMenu(crashMachine).show(player);
-
-                    }).show(player);
-                });
+                .hideFlags()
+                .customModel(3)
+                .build();
     }
 }
