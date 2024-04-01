@@ -8,10 +8,12 @@ import me.wega.rpgambling.RPGambling;
 import me.wega.rpgambling.machines.BetMenu;
 import me.wega.rpgambling.utils.ItemBuilder;
 import net.kyori.adventure.text.Component;
+import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
@@ -29,6 +31,7 @@ public class SlotMachineMenu extends ChestGui {
     private final SlotMachine slotMachine;
     boolean spinning = false;
     private Player player;
+    private final Economy vault = RPGambling.getInstance().getVault();
 
     public SlotMachineMenu(SlotMachine slotMachine) {
         super(6, StringHolder.deserialize("&f⻔⻔⻔⻔⻔⻔⻔⻔\uE66C"));
@@ -67,7 +70,13 @@ public class SlotMachineMenu extends ChestGui {
             if (!spinning) {
                 Player player = ((Player) event.getWhoClicked());
                 rollTimes(player, 20);
-                // TODO take away bet money
+                double betAmount = slotMachine.getBetOrDefault(player);
+                if (!vault.has(player, betAmount)) {
+                    player.sendMessage("Not enough funds");
+                    player.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
+                    return;
+                }
+                vault.withdrawPlayer(player, betAmount);
             }
         });
 
@@ -132,6 +141,7 @@ public class SlotMachineMenu extends ChestGui {
         if (multiplier > 0) {
             double reward = slotMachine.getBetOrDefault(player) * multiplier;
             player.sendMessage("Congratulations! You won " + multiplier + "x your bet, which is " + reward + "!");
+            vault.depositPlayer(player, reward);
         } else {
             player.sendMessage("Better luck next time!");
         }

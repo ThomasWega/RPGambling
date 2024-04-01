@@ -3,8 +3,8 @@ package me.wega.rpgambling.command;
 import dev.jorel.commandapi.CommandAPICommand;
 import me.wega.rpgambling.data.PlayerData;
 import me.wega.rpgambling.machines.crash.CrashMachine;
+import me.wega.rpgambling.machines.crash.CrashMachineMenu;
 import me.wega.rpgambling.machines.slot.SlotMachine;
-import me.wega.rpgambling.machines.slot.SlotMachineMenu;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
@@ -19,8 +19,8 @@ public class GamblingCommand {
         new CommandAPICommand("gambling")
                 .withSubcommand(new CommandAPICommand("test")
                         .executesPlayer((sender, args) -> {
-                            new SlotMachineMenu(slotMachineS).show(sender);
-                           // new CrashMenu(crashMachineS).show(sender);
+                           // new SlotMachineMenu(slotMachineS).show(sender);
+                            new CrashMachineMenu(crashMachineS).show(sender);
                         }))
             .withPermission("gambling.user")
             .withSubcommand(new CommandAPICommand("admin")

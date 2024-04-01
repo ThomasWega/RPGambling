@@ -9,6 +9,7 @@ import me.wega.rpgambling.machines.BetMenu;
 import me.wega.rpgambling.utils.ItemBuilder;
 import me.wega.rpgambling.utils.SkullCreator;
 import net.kyori.adventure.text.Component;
+import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -21,6 +22,7 @@ public class CrashMachineMenu extends ChestGui {
     private final CrashMachine crashMachine;
     private final StaticPane buttonAddBetPane = new StaticPane(0, 5, 9, 1);
     private final OutlinePane betsPane = new OutlinePane(2, 1, 5, 3);
+    private final Economy vault = RPGambling.getInstance().getVault();
 
     public CrashMachineMenu(CrashMachine crashMachine) {
         super(6, "Crash");
@@ -76,7 +78,10 @@ public class CrashMachineMenu extends ChestGui {
                     .build(),
                     event -> {
                         Player better2 = ((Player) event.getWhoClicked());
+                        event.setCancelled(true);
+                        if (!better2.equals(better)) return;
                         crashMachine.removeBet(better2);
+                        vault.depositPlayer(player, betAmount);
                         better2.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
                     }
             );
@@ -108,7 +113,17 @@ public class CrashMachineMenu extends ChestGui {
                 event -> {
                     event.setCancelled(true);
                     Player player = ((Player) event.getWhoClicked());
-                    new BetMenu(crashMachine, e -> new CrashMachineMenu(crashMachine).show(player)).show(player);
+                    new BetMenu(crashMachine, e -> {
+                        double betAmount = crashMachine.getBet(player);
+                        if (!vault.has(player, betAmount)) {
+                            player.sendMessage("Not enough funds");
+                            return;
+                        }
+
+                        vault.withdrawPlayer(player, betAmount);
+                        new CrashMachineMenu(crashMachine).show(player);
+
+                    }).show(player);
                 });
     }
 }
