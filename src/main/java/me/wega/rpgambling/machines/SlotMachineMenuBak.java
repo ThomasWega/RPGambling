@@ -1,11 +1,12 @@
-package me.wega.rpgambling.machines.slot;
+package me.wega.rpgambling.machines;
 
 import com.github.stefvanschie.inventoryframework.adventuresupport.StringHolder;
 import com.github.stefvanschie.inventoryframework.gui.GuiItem;
 import com.github.stefvanschie.inventoryframework.gui.type.ChestGui;
 import com.github.stefvanschie.inventoryframework.pane.StaticPane;
 import me.wega.rpgambling.RPGambling;
-import me.wega.rpgambling.machines.BetMenu;
+import me.wega.rpgambling.machines.slot.SlotItem;
+import me.wega.rpgambling.machines.slot.SlotMachine;
 import me.wega.rpgambling.utils.ItemBuilder;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -15,12 +16,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class SlotMachineMenu extends ChestGui {
+public class SlotMachineMenuBak extends ChestGui {
     private final Map<Integer, LinkedList<GuiItem>> columns = new HashMap<>(5);
     private final Map<Integer, StaticPane> columnPanes = new HashMap<>(5);
     private final StaticPane rollPane = new StaticPane(4, 5, 3, 1);
@@ -30,16 +32,16 @@ public class SlotMachineMenu extends ChestGui {
     boolean spinning = false;
     private Player player;
 
-    public SlotMachineMenu(SlotMachine slotMachine) {
+    public SlotMachineMenuBak(SlotMachine slotMachine) {
         super(6, StringHolder.deserialize("&f⻔⻔⻔⻔⻔⻔⻔⻔\uE66C"));
         this.slotMachine = slotMachine;
     }
 
-    // custom show method needed to get player!
-    public void show(Player player) {
-        this.player = player;
+    @Override
+    public void show(@NotNull HumanEntity humanEntity) {
+        this.player = ((Player) humanEntity);
         this.initialize();
-        this.show(((HumanEntity) player));
+        super.show(humanEntity);
     }
 
     private void initialize() {
@@ -74,7 +76,7 @@ public class SlotMachineMenu extends ChestGui {
         betPane.fillWith(getChooseBetItem(), event -> {
             event.setCancelled(true);
             Player player = ((Player) event.getWhoClicked());
-            new BetMenu(slotMachine, e -> new SlotMachineMenu(slotMachine).show(player)).show(player);
+          //  new BetMenu(slotMachine, e -> new SlotMachineMenuBak(slotMachine).show(player)).show(player);
         });
 
         setOnClose(event -> {
