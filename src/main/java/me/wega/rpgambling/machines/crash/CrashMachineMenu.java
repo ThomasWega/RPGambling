@@ -22,7 +22,6 @@ import org.bukkit.scheduler.BukkitTask;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 public class CrashMachineMenu extends ChestGui {
     private final CrashMachine crashMachine;
@@ -46,7 +45,6 @@ public class CrashMachineMenu extends ChestGui {
 
         placeBetsPane.fillWith(getPlaceBetItem(), event -> {
             event.setCancelled(true);
-            Player player = ((Player) event.getWhoClicked());
             new BetMenu(crashMachine, e -> {
                 double betAmount = crashMachine.getBet(player);
                 if (!vault.has(player, betAmount)) {
@@ -69,13 +67,17 @@ public class CrashMachineMenu extends ChestGui {
          I know, I know. This is super stupid, but I wasn't able to find a different way to update
          every open gui for the machine while still keeping every menu personal to only one player
         */
-        Bukkit.getScheduler().runTaskTimer(RPGambling.getInstance(), this::loadBets, 4L, 20L);
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                if (getViewerCount() == 0) cancel();
+                loadBets();
+            }
+        }.runTaskTimer(RPGambling.getInstance(), 4L, 20L);
     }
 
     @SuppressWarnings("DataFlowIssue")
     private void loadBets() {
-        if (getViewerCount() == 0) return;
-        Player player = ((Player) getViewers().get(0));
         betsPane.clear();
         crashMachine.getBets().entrySet().stream()
                 .filter(entry -> Bukkit.getPlayer(entry.getKey()) != null)
@@ -96,28 +98,32 @@ public class CrashMachineMenu extends ChestGui {
     private @Nullable BukkitTask timer;
 
     private void handleCountdown() {
+        System.out.println("HANDLE");
         if (crashMachine.getBetsCount() <= 0 || crashMachine.isCountingDown()) return;
-
         crashMachine.setCountingDown(true);
-
-        CompletableFuture<Void> future = new CompletableFuture<>();
+        System.out.println("START COUNTING DOWN");
 
         this.timer = new BukkitRunnable() {
+            final double countdownTimeSec = 10d;
+            int i = 0;
             @Override
             public void run() {
-                if (crashMachine.getBetsCount() <= 0) {
-
-                    cancel();
+                if (crashMachine.getBetsCount() <= 0) cancel();
+                if (i < countdownTimeSec) {
+                    player.sendMessage("Game is starting in " + (countdownTimeSec - i) + "s");
+                    i++;
+                    return;
                 }
 
-
+                player.sendMessage("STARTING GAME");
+                cancel();
             }
         }.runTaskTimer(RPGambling.getInstance(), 20L, 20L);
     }
 
     private GuiItem getBetButton(Player player, double betAmount) {
         Player better = ((Player) getViewers().get(0));
-        if (player == better)
+        if (player.equals(better))
             return new GuiItem(new ItemBuilder(SkullCreator.itemFromUuid(player.getUniqueId()))
                     .displayName(Component.text(player.getName()))
                     .lore(List.of(

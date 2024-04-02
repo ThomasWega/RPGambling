@@ -62,7 +62,6 @@ public class SlotMachineMenu extends ChestGui {
         rollPane.fillWith(getRollItem(), event -> {
             event.setCancelled(true);
             if (!spinning) {
-                Player player = ((Player) event.getWhoClicked());
                 rollTimes(player, 20);
                 double betAmount = slotMachine.getBetOrDefault(player);
                 if (!vault.has(player, betAmount)) {
@@ -76,13 +75,11 @@ public class SlotMachineMenu extends ChestGui {
 
         betPane.fillWith(getChooseBetItem(), event -> {
             event.setCancelled(true);
-            Player player = ((Player) event.getWhoClicked());
             new BetMenu(slotMachine, e -> new SlotMachineMenu(slotMachine, player).show(player)).show(player);
         });
 
         // TODO test what happens when has bet but leaves!
         setOnClose(event -> {
-            Player player = ((Player) event.getPlayer());
             if (!spinning)
                 slotMachine.removeBet(player);
         });
