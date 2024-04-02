@@ -16,9 +16,13 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 public class CrashMachineMenu extends ChestGui {
     private final CrashMachine crashMachine;
@@ -26,10 +30,12 @@ public class CrashMachineMenu extends ChestGui {
     private final StaticPane closePane = new StaticPane(5, 5, 3, 1);
     private final OutlinePane betsPane = new OutlinePane(1, 1, 7, 3);
     private final Economy vault = RPGambling.getInstance().getVault();
+    private final Player player;
 
-    public CrashMachineMenu(CrashMachine crashMachine) {
+    public CrashMachineMenu(CrashMachine crashMachine, Player player) {
         super(6, StringHolder.deserialize("&f⻔⻔⻔⻔⻔⻔⻔⻔\uE40A"));
         this.crashMachine = crashMachine;
+        this.player = player;
         this.initialize();
     }
 
@@ -49,7 +55,7 @@ public class CrashMachineMenu extends ChestGui {
                 }
 
                 vault.withdrawPlayer(player, betAmount);
-                new CrashMachineMenu(crashMachine).show(player);
+                new CrashMachineMenu(crashMachine, player).show(player);
 
             }).show(player);
         });
@@ -84,6 +90,29 @@ public class CrashMachineMenu extends ChestGui {
                 .forEach(entry -> betsPane.addItem(getBetButton(Bukkit.getPlayer(entry.getKey()), entry.getValue())));
 
         this.update();
+        this.handleCountdown();
+    }
+
+    private @Nullable BukkitTask timer;
+
+    private void handleCountdown() {
+        if (crashMachine.getBetsCount() <= 0 || crashMachine.isCountingDown()) return;
+
+        crashMachine.setCountingDown(true);
+
+        CompletableFuture<Void> future = new CompletableFuture<>();
+
+        this.timer = new BukkitRunnable() {
+            @Override
+            public void run() {
+                if (crashMachine.getBetsCount() <= 0) {
+
+                    cancel();
+                }
+
+
+            }
+        }.runTaskTimer(RPGambling.getInstance(), 20L, 20L);
     }
 
     private GuiItem getBetButton(Player player, double betAmount) {

@@ -19,8 +19,8 @@ public class GamblingCommand {
         new CommandAPICommand("gambling")
                 .withSubcommand(new CommandAPICommand("test")
                         .executesPlayer((sender, args) -> {
-                           // new SlotMachineMenu(slotMachineS).show(sender);
-                            new CrashMachineMenu(crashMachineS).show(sender);
+                           // new SlotMachineMenu(slotMachineS, sender).show(sender);
+                            new CrashMachineMenu(crashMachineS, sender).show(sender);
                         }))
             .withPermission("gambling.user")
             .withSubcommand(new CommandAPICommand("admin")

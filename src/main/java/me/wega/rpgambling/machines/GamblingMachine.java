@@ -3,11 +3,14 @@ package me.wega.rpgambling.machines;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 import java.util.LinkedHashMap;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @AllArgsConstructor
@@ -34,5 +37,21 @@ public abstract class GamblingMachine {
 
     public void removeBet(Player player) {
         bets.remove(player.getUniqueId());
+    }
+
+    public int getBetsCount() {
+        return bets.size();
+    }
+
+    public double getTotalBetsAmount() {
+        return bets.values().stream()
+                .mapToDouble(Double::doubleValue)
+                .sum();
+    }
+
+    public Set<Player> getBetters() {
+        return bets.keySet().stream()
+                .map(Bukkit::getPlayer)
+                .collect(Collectors.toSet());
     }
 }

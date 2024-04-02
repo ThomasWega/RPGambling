@@ -11,7 +11,6 @@ import net.kyori.adventure.text.Component;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
@@ -30,19 +29,14 @@ public class SlotMachineMenu extends ChestGui {
     private final Random random = new Random();
     private final SlotMachine slotMachine;
     boolean spinning = false;
-    private Player player;
+    private final Player player;
     private final Economy vault = RPGambling.getInstance().getVault();
 
-    public SlotMachineMenu(SlotMachine slotMachine) {
+    public SlotMachineMenu(SlotMachine slotMachine, Player player) {
         super(6, StringHolder.deserialize("&f⻔⻔⻔⻔⻔⻔⻔⻔\uE66C"));
         this.slotMachine = slotMachine;
-    }
-
-    // custom show method needed to get player!
-    public void show(Player player) {
         this.player = player;
         this.initialize();
-        this.show(((HumanEntity) player));
     }
 
     private void initialize() {
@@ -83,9 +77,10 @@ public class SlotMachineMenu extends ChestGui {
         betPane.fillWith(getChooseBetItem(), event -> {
             event.setCancelled(true);
             Player player = ((Player) event.getWhoClicked());
-            new BetMenu(slotMachine, e -> new SlotMachineMenu(slotMachine).show(player)).show(player);
+            new BetMenu(slotMachine, e -> new SlotMachineMenu(slotMachine, player).show(player)).show(player);
         });
 
+        // TODO test what happens when has bet but leaves!
         setOnClose(event -> {
             Player player = ((Player) event.getPlayer());
             if (!spinning)
