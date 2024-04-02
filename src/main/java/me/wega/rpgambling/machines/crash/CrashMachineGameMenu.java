@@ -15,6 +15,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.util.List;
 import java.util.Map;
@@ -33,25 +34,27 @@ public class CrashMachineGameMenu extends ChestGui {
         this.initialize();
     }
 
+    private BukkitTask task;
+
     private void initialize() {
         addPane(stopPane);
         addPane(betsPane);
 
         this.loadBets();
-        crashMachine.startCrash();
+        crashMachine.startCrash(this::handleCrash);
 
         /*
          I know, I know. This is super stupid, but I wasn't able to find a different way to update
          every open gui for the machine while still keeping every menu personal to only one player
         */
-        new BukkitRunnable() {
+        this.task = new BukkitRunnable() {
             @Override
             public void run() {
+                if (!crashMachine.isCrashStarted()) return;
                 if (getViewerCount() == 0) cancel();
                 stopPane.clear();
                 stopPane.fillWith(getStopItem(), event -> {
                     event.setCancelled(true);
-                    // TODO finish stop
                 });
                 update();
             }
@@ -73,6 +76,11 @@ public class CrashMachineGameMenu extends ChestGui {
                 .forEach(entry -> betsPane.addItem(getBetButton(Bukkit.getPlayer(entry.getKey()), entry.getValue())));
 
         this.update();
+    }
+
+    private void handleCrash(double crashAmount) {
+        player.sendMessage("Crashed at: " + crashAmount);
+        if (task != null) task.cancel();
     }
 
     private GuiItem getBetButton(Player betPlayer, double betAmount) {
