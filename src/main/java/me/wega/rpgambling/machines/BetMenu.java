@@ -82,6 +82,7 @@ public class BetMenu extends ChestGui {
                                 return true;
                             })
                             .onSuccess(bet -> {
+                                // TODO round up bet
                                 player.sendMessage("Placed bet of " + bet);
                                 machine.setBet(player, bet);
                                 afterBetAction.accept(event);

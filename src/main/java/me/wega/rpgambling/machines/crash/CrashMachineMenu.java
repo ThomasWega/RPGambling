@@ -90,33 +90,7 @@ public class CrashMachineMenu extends ChestGui {
                 .forEach(entry -> betsPane.addItem(getBetButton(Bukkit.getPlayer(entry.getKey()), entry.getValue())));
 
         this.update();
-        this.handleCountdown();
-    }
-
-    private void handleCountdown() {
-        System.out.println("HANDLE");
-        if (crashMachine.getBetsCount() <= 0 || crashMachine.isCountingDown()) return;
-        crashMachine.setCountingDown(true);
-        System.out.println("START COUNTING DOWN");
-
-        new BukkitRunnable() {
-            final double countdownTimeSec = 10d;
-            int i = 0;
-            @Override
-            public void run() {
-                if (crashMachine.getBetsCount() <= 0) cancel();
-                if (i < countdownTimeSec) {
-                    player.sendMessage("Game is starting in " + (countdownTimeSec - i) + "s");
-                    i++;
-                    return;
-                }
-
-                player.sendMessage("STARTING GAME");
-                cancel();
-                new CrashMachineGameMenu(crashMachine, player).show(player);
-                System.out.println("SHOW!");
-            }
-        }.runTaskTimer(RPGambling.getInstance(), 20L, 20L);
+        crashMachine.handleCountdown(player);
     }
 
     private GuiItem getBetButton(Player betPlayer, double betAmount) {

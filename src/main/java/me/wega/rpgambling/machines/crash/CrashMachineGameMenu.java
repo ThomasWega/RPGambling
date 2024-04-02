@@ -14,6 +14,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.List;
 import java.util.Map;
@@ -36,13 +37,25 @@ public class CrashMachineGameMenu extends ChestGui {
         addPane(stopPane);
         addPane(betsPane);
 
-        stopPane.fillWith(getStopItem(), event -> {
-            event.setCancelled(true);
-            // TODO finish stop
-        });
-
         this.loadBets();
-        this.startCrash();
+        crashMachine.startCrash();
+
+        /*
+         I know, I know. This is super stupid, but I wasn't able to find a different way to update
+         every open gui for the machine while still keeping every menu personal to only one player
+        */
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                if (getViewerCount() == 0) cancel();
+                stopPane.clear();
+                stopPane.fillWith(getStopItem(), event -> {
+                    event.setCancelled(true);
+                    // TODO finish stop
+                });
+                update();
+            }
+        }.runTaskTimer(RPGambling.getInstance(), 1L, 1L);
     }
 
     @SuppressWarnings("DataFlowIssue")
@@ -62,10 +75,6 @@ public class CrashMachineGameMenu extends ChestGui {
         this.update();
     }
 
-    private void startCrash() {
-
-    }
-
     private GuiItem getBetButton(Player betPlayer, double betAmount) {
         return new GuiItem(new ItemBuilder(SkullCreator.itemFromUuid(betPlayer.getUniqueId()))
                 .displayName(Component.text(betPlayer.getName()))
@@ -79,7 +88,7 @@ public class CrashMachineGameMenu extends ChestGui {
 
     private ItemStack getStopItem() {
         return new ItemBuilder(Material.PAPER)
-                .displayName(Component.text("Stop"))
+                .displayName(Component.text("Current value - " + crashMachine.getCrashAmount()))
                 .customModel(3)
                 .hideFlags()
                 .build();
