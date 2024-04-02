@@ -48,15 +48,30 @@ public class CrashMachineGameMenu extends ChestGui {
          every open gui for the machine while still keeping every menu personal to only one player
         */
         this.task = new BukkitRunnable() {
+            boolean stopped = false;
             @Override
             public void run() {
-                if (!crashMachine.isCrashStarted()) return;
+                if (stopped) {
+                    cancel();
+                    return;
+                }
+                if (!crashMachine.isCrashRunning()) return;
                 if (getViewerCount() == 0) {
                     cancel();
                     return;
                 }
                 stopPane.clear();
-                stopPane.fillWith(getStopItem(), event -> event.setCancelled(true));
+                stopPane.fillWith(getStopItem(), event -> {
+                    event.setCancelled(true);
+                    if (!crashMachine.hasBet(player)) return;
+                    crashMachine.stopCrash(player);
+                    double stopAmount = crashMachine.getStopAmount(player);
+                    double reward = crashMachine.getBet(player) * stopAmount;
+                    crashMachine.removeBet(player);
+                    vault.depositPlayer(player, reward);
+                    player.sendMessage("Stopped at " + crashMachine.getStopAmount(player) + ". Reward: " + reward);
+                    stopped = true;
+                });
                 update();
             }
         }.runTaskTimer(RPGambling.getInstance(), 1L, 1L);
@@ -82,6 +97,9 @@ public class CrashMachineGameMenu extends ChestGui {
     private void handleCrash(double crashAmount) {
         player.sendMessage("Crashed at: " + crashAmount);
         if (task != null) task.cancel();
+        crashMachine.getBetters().forEach(loser -> loser.sendMessage("You've lost " + crashMachine.getBet(loser)));
+        crashMachine.refreshBets();
+        Bukkit.getScheduler().runTaskLater(RPGambling.getInstance(), () -> new CrashMachineMenu(crashMachine, player).show(player), 60L);
     }
 
     private GuiItem getBetButton(Player betPlayer, double betAmount) {
@@ -96,6 +114,21 @@ public class CrashMachineGameMenu extends ChestGui {
     }
 
     private ItemStack getStopItem() {
+        if (!crashMachine.hasBet(player)) {
+            return new ItemBuilder(Material.PAPER)
+                    .displayName(Component.text("Current value - " + crashMachine.getCrashAmount()))
+                    .lore(List.of(Component.text("You didn't bet")))
+                    .customModel(3)
+                    .hideFlags()
+                    .build();
+        }
+        if (crashMachine.hasStopped(player)) {
+            return new ItemBuilder(Material.PAPER)
+                    .displayName(Component.text("Stopped at - " + crashMachine.getStopAmount(player)))
+                    .customModel(3)
+                    .hideFlags()
+                    .build();
+        }
         return new ItemBuilder(Material.PAPER)
                 .displayName(Component.text("Current value - " + crashMachine.getCrashAmount()))
                 .customModel(3)

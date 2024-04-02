@@ -43,6 +43,10 @@ public abstract class GamblingMachine {
         return bets.size();
     }
 
+    public void refreshBets() {
+        bets.clear();
+    }
+
     public double getTotalBetsAmount() {
         return bets.values().stream()
                 .mapToDouble(Double::doubleValue)

@@ -22,8 +22,9 @@ public class CrashMachine extends GamblingMachine {
     // TODO roundup!
     private double crashAmount = 0;
     private int startCountdown = 0;
-    private boolean crashStarted = false;
+    private boolean crashRunning = false;
     private @Nullable BukkitTask countdownTask;
+    private final Map<Player, Double> stopAmounts = new HashMap<>();
     public CrashMachine(Location location, LinkedHashMap<UUID, Double> bets) {
         super(location, bets);
     }
@@ -31,11 +32,17 @@ public class CrashMachine extends GamblingMachine {
         super(location);
     }
 
+    public double getStopAmount(Player player) {
+        return stopAmounts.get(player);
+    }
+
+    public boolean hasStopped(Player player) {
+        return stopAmounts.containsKey(player);
+    }
+
     public void handleCountdown(Player player) {
         countdownPlayers.add(player);
         if (countdownTask != null) return;
-
-        System.out.println("ADD " + countdownPlayers);
 
         CrashMachine machine = this;
         this.countdownTask = new BukkitRunnable() {
@@ -69,10 +76,20 @@ public class CrashMachine extends GamblingMachine {
         }.runTaskTimer(RPGambling.getInstance(), 40L, 20L);
     }
 
-    public void startCrash(Consumer<Double> crashCallback) {
-        if (crashStarted) return;
+    private final Set<Consumer<Double>> crashCallbacks = new HashSet<>();
 
-        crashStarted = true;
+    public boolean stopCrash(Player player) {
+        if (!isCrashRunning())  return false;
+
+        stopAmounts.put(player, crashAmount);
+        return true;
+    }
+
+    public void startCrash(Consumer<Double> crashCallback) {
+        crashCallbacks.add(crashCallback);
+        if (crashRunning) return;
+
+        crashRunning = true;
         new BukkitRunnable() {
             final double divider = random.nextDouble(0.4, 1);
             final double num = random.nextDouble();
@@ -81,7 +98,8 @@ public class CrashMachine extends GamblingMachine {
             @Override
             public void run() {
                 if (crashAmount >= multiplier) {
-                    crashCallback.accept(crashAmount);
+                    crashCallbacks.forEach(callback -> callback.accept(crashAmount));
+                    stopAmounts.clear();
                     cancel();
                 }
                 crashAmount += 0.01;
@@ -89,7 +107,9 @@ public class CrashMachine extends GamblingMachine {
 
             @Override
             public synchronized void cancel() throws IllegalStateException {
-                crashStarted = false;
+                crashRunning = false;
+                crashAmount = 0;
+                crashCallbacks.clear();
                 super.cancel();
             }
         }.runTaskTimer(RPGambling.getInstance(), 2L, 2L);
