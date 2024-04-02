@@ -17,9 +17,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
@@ -95,15 +93,13 @@ public class CrashMachineMenu extends ChestGui {
         this.handleCountdown();
     }
 
-    private @Nullable BukkitTask timer;
-
     private void handleCountdown() {
         System.out.println("HANDLE");
         if (crashMachine.getBetsCount() <= 0 || crashMachine.isCountingDown()) return;
         crashMachine.setCountingDown(true);
         System.out.println("START COUNTING DOWN");
 
-        this.timer = new BukkitRunnable() {
+        new BukkitRunnable() {
             final double countdownTimeSec = 10d;
             int i = 0;
             @Override
@@ -117,15 +113,16 @@ public class CrashMachineMenu extends ChestGui {
 
                 player.sendMessage("STARTING GAME");
                 cancel();
+                new CrashMachineGameMenu(crashMachine, player).show(player);
+                System.out.println("SHOW!");
             }
         }.runTaskTimer(RPGambling.getInstance(), 20L, 20L);
     }
 
-    private GuiItem getBetButton(Player player, double betAmount) {
-        Player better = ((Player) getViewers().get(0));
-        if (player.equals(better))
-            return new GuiItem(new ItemBuilder(SkullCreator.itemFromUuid(player.getUniqueId()))
-                    .displayName(Component.text(player.getName()))
+    private GuiItem getBetButton(Player betPlayer, double betAmount) {
+        if (betPlayer.equals(player))
+            return new GuiItem(new ItemBuilder(SkullCreator.itemFromUuid(betPlayer.getUniqueId()))
+                    .displayName(Component.text(betPlayer.getName()))
                     .lore(List.of(
                             Component.text("bet: " + betAmount),
                             Component.text("Click to remove your bet")
@@ -135,20 +132,20 @@ public class CrashMachineMenu extends ChestGui {
                     event -> {
                         Player better2 = ((Player) event.getWhoClicked());
                         event.setCancelled(true);
-                        if (!better2.equals(better)) return;
-                        crashMachine.removeBet(better2);
-                        vault.depositPlayer(player, betAmount);
+                        if (!better2.equals(betPlayer)) return;
+                        crashMachine.removeBet(betPlayer);
+                        vault.depositPlayer(betPlayer, betAmount);
                         better2.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
                     }
             );
 
-        return new GuiItem(new ItemBuilder(SkullCreator.itemFromUuid(player.getUniqueId()))
-                .displayName(Component.text(player.getName()))
+        return new GuiItem(new ItemBuilder(SkullCreator.itemFromUuid(betPlayer.getUniqueId()))
+                .displayName(Component.text(betPlayer.getName()))
                 .lore(List.of(
                         Component.text("bet: " + betAmount)
                 ))
                 .hideFlags()
-                .build()
+                .build(), event -> event.setCancelled(true)
         );
     }
 
