@@ -53,9 +53,7 @@ public class CrashMachineGameMenu extends ChestGui {
                 if (!crashMachine.isCrashStarted()) return;
                 if (getViewerCount() == 0) cancel();
                 stopPane.clear();
-                stopPane.fillWith(getStopItem(), event -> {
-                    event.setCancelled(true);
-                });
+                stopPane.fillWith(getStopItem(), event -> event.setCancelled(true));
                 update();
             }
         }.runTaskTimer(RPGambling.getInstance(), 1L, 1L);
