@@ -51,7 +51,10 @@ public class CrashMachineGameMenu extends ChestGui {
             @Override
             public void run() {
                 if (!crashMachine.isCrashStarted()) return;
-                if (getViewerCount() == 0) cancel();
+                if (getViewerCount() == 0) {
+                    cancel();
+                    return;
+                }
                 stopPane.clear();
                 stopPane.fillWith(getStopItem(), event -> event.setCancelled(true));
                 update();

@@ -45,6 +45,7 @@ public class CrashMachineMenu extends ChestGui {
             event.setCancelled(true);
             new BetMenu(crashMachine, e -> {
                 double betAmount = crashMachine.getBet(player);
+                // TODO fix betting even with not enough funds
                 if (!vault.has(player, betAmount)) {
                     player.sendMessage("Not enough funds");
                     return;
@@ -68,7 +69,10 @@ public class CrashMachineMenu extends ChestGui {
         new BukkitRunnable() {
             @Override
             public void run() {
-                if (getViewerCount() == 0) cancel();
+                if (getViewerCount() == 0) {
+                    cancel();
+                    return;
+                }
                 loadBets();
             }
         }.runTaskTimer(RPGambling.getInstance(), 4L, 20L);

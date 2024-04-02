@@ -9,59 +9,64 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Consumer;
 
 @Getter
 @Setter
 public class CrashMachine extends GamblingMachine {
-    private final Map<Player, BukkitTask> runningCountdowns = new HashMap<>();
     private final Random random = new Random();
-    private boolean isCountingDown;
+    private final double countdownTimeSec = 10d;
+    private final Set<Player> countdownPlayers = new HashSet<>();
     // TODO roundup!
     private double crashAmount = 0;
     private int startCountdown = 0;
     private boolean crashStarted = false;
-
+    private @Nullable BukkitTask countdownTask;
     public CrashMachine(Location location, LinkedHashMap<UUID, Double> bets) {
         super(location, bets);
     }
-
     public CrashMachine(Location location) {
         super(location);
     }
 
     public void handleCountdown(Player player) {
-        if (runningCountdowns.containsKey(player)) return;
-        if (getBetsCount() <= 0) return;
+        countdownPlayers.add(player);
+        if (countdownTask != null) return;
+
+        System.out.println("ADD " + countdownPlayers);
 
         CrashMachine machine = this;
-        runningCountdowns.put(player, new BukkitRunnable() {
-                    final double countdownTimeSec = 10d;
+        this.countdownTask = new BukkitRunnable() {
 
-                    @Override
-                    public void run() {
-                        if (getBetsCount() <= 0) cancel();
-                        if (!hasBet(player)) cancel();
-                        if (startCountdown < countdownTimeSec) {
-                            player.sendMessage("Game is starting in " + (countdownTimeSec - startCountdown) + "s");
-                            startCountdown++;
-                            return;
-                        }
+            @Override
+            public void run() {
+                if (getBetsCount() <= 0) {
+                    cancel();
+                    return;
+                }
+                if (startCountdown < countdownTimeSec) {
+                    countdownPlayers.forEach(p -> p.sendMessage("Game is starting in " + (countdownTimeSec - startCountdown) + "s"));
+                    startCountdown++;
+                    return;
+                }
 
-                        cancel();
-                        player.sendMessage("STARTING GAME");
-                        new CrashMachineGameMenu(machine, player).show(player);
-                    }
+                countdownPlayers.forEach(p -> {
+                    p.sendMessage("STARTING GAME");
+                    new CrashMachineGameMenu(machine, p).show(p);
+                });
+                cancel();
+            }
 
-                    @Override
-                    public synchronized void cancel() throws IllegalStateException {
-                        startCountdown = 0;
-                        runningCountdowns.remove(player);
-                        super.cancel();
-                    }
-                }.runTaskTimer(RPGambling.getInstance(), 40L, 20L)
-        );
+            @Override
+            public synchronized void cancel() throws IllegalStateException {
+                startCountdown = 0;
+                countdownPlayers.clear();
+                countdownTask = null;
+                super.cancel();
+            }
+        }.runTaskTimer(RPGambling.getInstance(), 40L, 20L);
     }
 
     public void startCrash(Consumer<Double> crashCallback) {
