@@ -13,6 +13,7 @@ import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -26,6 +27,7 @@ public class CrashMachineGameMenu extends ChestGui {
     private final OutlinePane betsPane = new OutlinePane(1, 1, 7, 3);
     private final Economy vault = RPGambling.getInstance().getVault();
     private final Player player;
+    private BukkitTask task;
 
     public CrashMachineGameMenu(CrashMachine crashMachine, Player player) {
         super(6, StringHolder.deserialize("&f⻔⻔⻔⻔⻔⻔⻔⻔\uE40C"));
@@ -33,8 +35,6 @@ public class CrashMachineGameMenu extends ChestGui {
         this.player = player;
         this.initialize();
     }
-
-    private BukkitTask task;
 
     private void initialize() {
         addPane(stopPane);
@@ -49,6 +49,7 @@ public class CrashMachineGameMenu extends ChestGui {
         */
         this.task = new BukkitRunnable() {
             boolean stopped = false;
+
             @Override
             public void run() {
                 if (stopped) {
@@ -63,18 +64,24 @@ public class CrashMachineGameMenu extends ChestGui {
                 stopPane.clear();
                 stopPane.fillWith(getStopItem(), event -> {
                     event.setCancelled(true);
-                    if (!crashMachine.hasBet(player)) return;
-                    crashMachine.stopCrash(player);
-                    double stopAmount = crashMachine.getStopAmount(player);
-                    double reward = crashMachine.getBet(player) * stopAmount;
-                    crashMachine.removeBet(player);
-                    vault.depositPlayer(player, reward);
-                    player.sendMessage("Stopped at " + crashMachine.getStopAmount(player) + ". Reward: " + reward);
+                    stopAction(event);
                     stopped = true;
                 });
                 update();
             }
         }.runTaskTimer(RPGambling.getInstance(), 1L, 1L);
+
+        setOnClose(this::stopAction);
+    }
+
+    private void stopAction(InventoryEvent event) {
+        if (!crashMachine.hasBet(player)) return;
+        crashMachine.stopCrash(player);
+        double stopAmount = crashMachine.getStopAmount(player);
+        double reward = crashMachine.getBet(player) * stopAmount;
+        crashMachine.removeBet(player);
+        vault.depositPlayer(player, reward);
+        player.sendMessage("Stopped at " + crashMachine.getStopAmount(player) + ". Reward: " + reward);
     }
 
     @SuppressWarnings("DataFlowIssue")
