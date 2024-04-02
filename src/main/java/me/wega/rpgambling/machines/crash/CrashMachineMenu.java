@@ -43,17 +43,14 @@ public class CrashMachineMenu extends ChestGui {
 
         placeBetsPane.fillWith(getPlaceBetItem(), event -> {
             event.setCancelled(true);
-            new BetMenu(crashMachine, e -> {
-                double betAmount = crashMachine.getBet(player);
-                // TODO fix betting even with not enough funds
+            new BetMenu(betAmount -> {
                 if (!vault.has(player, betAmount)) {
                     player.sendMessage("Not enough funds");
                     return;
                 }
-
+                crashMachine.setBet(player, betAmount);
                 vault.withdrawPlayer(player, betAmount);
                 new CrashMachineMenu(crashMachine, player).show(player);
-
             }).show(player);
         });
 

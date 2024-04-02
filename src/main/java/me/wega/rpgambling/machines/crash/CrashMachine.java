@@ -91,7 +91,7 @@ public class CrashMachine extends GamblingMachine {
 
         crashRunning = true;
         new BukkitRunnable() {
-            final double divider = random.nextDouble(0.4, 1);
+            final double divider = random.nextDouble(0.9);
             final double num = random.nextDouble();
             final double multiplier = num / divider;
 

@@ -10,7 +10,6 @@ import me.wega.rpgambling.utils.ItemBuilder;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 
 import java.util.Collections;
@@ -19,8 +18,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 public class BetMenu extends ChestGui {
-    private final GamblingMachine machine;
-    private final Consumer<InventoryClickEvent> afterBetAction;
+    private final Consumer<Double> betResult;
     private final OutlinePane betsPane = new OutlinePane(2, 1, 5, 1);
     private final StaticPane customBetPane = new StaticPane(4, 3, 1, 1);
     private final Map<Integer, Material> betsPresets = Collections.unmodifiableMap(new LinkedHashMap<>() {{
@@ -31,10 +29,9 @@ public class BetMenu extends ChestGui {
         put(2500, Material.EMERALD);
     }});
 
-    public BetMenu(GamblingMachine machine, Consumer<InventoryClickEvent> afterBetAction) {
+    public BetMenu(Consumer<Double> betResult) {
         super(5, "Select bet amount");
-        this.machine = machine;
-        this.afterBetAction = afterBetAction;
+        this.betResult = betResult;
         this.initialize();
     }
 
@@ -53,9 +50,7 @@ public class BetMenu extends ChestGui {
                 .build(),
                 event -> {
                     event.setCancelled(true);
-                    Player player = ((Player) event.getWhoClicked());
-                    machine.setBet(player, betAmount);
-                    afterBetAction.accept(event);
+                    betResult.accept(betAmount);
                 }
         );
     }
@@ -72,6 +67,7 @@ public class BetMenu extends ChestGui {
                     event.setCancelled(true);
                     player.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
                     player.sendMessage("Write how much to bet or 'cancel'");
+                    // TODO round up bet
                     new ChatCallback<>(RPGambling.getInstance(), player, ChatCallback.Parser.DOUBLE)
                             .onCondition(bet -> {
                                 if (bet < minBet) {
@@ -81,15 +77,10 @@ public class BetMenu extends ChestGui {
                                 }
                                 return true;
                             })
-                            .onSuccess(bet -> {
-                                // TODO round up bet
-                                player.sendMessage("Placed bet of " + bet);
-                                machine.setBet(player, bet);
-                                afterBetAction.accept(event);
-                            })
+                            .onSuccess(betResult)
                             .onCancel(player1 -> {
                                 player1.sendMessage("cancelled betting");
-                                afterBetAction.accept(event);
+                                player1.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
                             })
                             .onFail(s -> {
                                 player.sendMessage(s + " is not a valid number!");

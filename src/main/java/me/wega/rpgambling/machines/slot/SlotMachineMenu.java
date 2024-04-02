@@ -75,7 +75,10 @@ public class SlotMachineMenu extends ChestGui {
 
         betPane.fillWith(getChooseBetItem(), event -> {
             event.setCancelled(true);
-            new BetMenu(slotMachine, e -> new SlotMachineMenu(slotMachine, player).show(player)).show(player);
+            new BetMenu(betAmount -> {
+                slotMachine.setBet(player, betAmount);
+                new SlotMachineMenu(slotMachine, player).show(player);
+            }).show(player);
         });
 
         // TODO test what happens when has bet but leaves!
